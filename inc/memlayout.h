@@ -41,4 +41,13 @@
 #define INTER_RAMH 0xFF80
 #define INT_ENBL_R 0xFFFF
 
+#define ENTRY_POINT 0x0100
+
+// Title information offsets
+#define N_LOGO    0x0104
+
+#define GAME_NAME 0x0134
+#define IS_GBC    0x0143 // GBC not supported
+#define CART_TYPE 0x0147 // Other than 00 are unsupported
+
 #endif // MEMLAYOUT_H

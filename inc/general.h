@@ -9,6 +9,7 @@ enum ERR_CODES {
     OK            = 0,
     MEM_ALLOC_ERR = -1,
     FILE_OPEN_ERR = -2,
+    UNSUPPORTED   = -3,
 };
 
 // Machine words on z80

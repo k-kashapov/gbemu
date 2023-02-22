@@ -16,7 +16,14 @@ int main(int argc, const char *argv[static argc + 1]) {
     } else {
         struct Emu emu = {};
         initEmu(&emu);
-        getFile(&emu, argv[1]);
+
+        int err = getFile(&emu, argv[1]);
+
+        if (err) {
+            freeEmu(&emu);
+            return EXIT_FAILURE;
+        }
+
         freeEmu(&emu);
     }
 
