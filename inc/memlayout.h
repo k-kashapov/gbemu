@@ -49,5 +49,9 @@
 #define GAME_NAME 0x0134
 #define IS_GBC    0x0143 // GBC not supported
 #define CART_TYPE 0x0147 // Other than 00 are unsupported
+#define ROM_SIZE  0x0148
+#define RAM_SIZE  0x0149
+#define REGION    0x014A
+
 
 #endif // MEMLAYOUT_H

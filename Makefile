@@ -1,7 +1,7 @@
 CC = gcc
 
-CCFLAGS  = -I inc -Wall -Wextra
-DBGFLAGS = -fsanitize=address -ggdb3 -O0
+CCFLAGS  = -I inc -Wall -Wextra -ggdb3
+DBGFLAGS = -fsanitize=address -O0
 
 SRCS = main.c src/*.c
 OBJS = $(SRCS:.c=.o)

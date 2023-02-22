@@ -14,7 +14,8 @@ struct Emu {
 };
 
 int  initEmu(struct Emu *tgt);
-void freeEmu(struct Emu *tgt);
 int  getFile(struct Emu *emu, const char name[static 1]);
+int  runEmu (struct Emu *emu);
+void freeEmu(struct Emu *tgt);
 
 #endif // EMU_H

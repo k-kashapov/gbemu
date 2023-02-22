@@ -5,10 +5,12 @@
 #include "file.h"
 #include "general.h"
 #include "memlayout.h"
+#include "cpu.h"
+#include "mem.h"
 
 #define RAM_POISON 0xC0DE
 
-int initEmu(struct Emu *tgt){
+int initEmu(struct Emu *tgt) {
     word *mem = (word *)calloc(0x10000, 1);
     if (!mem) {
         perror("ERROR: could not allocate memory");
@@ -29,6 +31,7 @@ int getFile(struct Emu *emu, const char name[static 1]) {
     }
 
     DBG_PRINT("game name = %.16s\n", emu->RAM + GAME_NAME);
+    DBG_PRINT("region    = %s\n", emu->RAM[REGION] ? "WEST" : "JP");
 
     if (emu->RAM[IS_GBC] == 0x80) {
         fprintf(stderr, "ERROR: GameBoy Color games unsupported!\n");
@@ -40,6 +43,17 @@ int getFile(struct Emu *emu, const char name[static 1]) {
                 "ERROR: Cartridge modification unsupported: 0x%02x!\n",
                 emu->RAM[CART_TYPE]);
         return UNSUPPORTED;
+    }
+
+    return OK;
+}
+
+int runEmu(struct Emu *emu) {
+    struct CPU cpu = {};
+    cpu.PC = ENTRY_POINT;
+
+    while (1) {
+        execOp(&cpu, memRead(emu->RAM, cpu.PC++));
     }
 
     return OK;

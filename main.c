@@ -24,6 +24,8 @@ int main(int argc, const char *argv[static argc + 1]) {
             return EXIT_FAILURE;
         }
 
+        err = runEmu(&emu);
+
         freeEmu(&emu);
     }
 

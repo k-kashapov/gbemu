@@ -2,6 +2,7 @@
 #define GENERAL_H
 
 #include <stdint.h>
+#include <stdio.h>
 
 #define DBG_PRINT(...) fprintf(stderr, __VA_ARGS__)
 
