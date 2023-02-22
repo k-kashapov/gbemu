@@ -1,4 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include "emu.h"
+#include "general.h"
+#include "memlayout.h"
+#include "file.h"
 
 void usage(void) {
     printf("USAGE: z80.elf [FILE].gb\n");
@@ -9,16 +14,11 @@ int main(int argc, const char *argv[static argc + 1]) {
         usage();
         return 0;
     } else {
-        FILE *rom = fopen(argv[1], "rb");
-        if (!rom) {
-            fprintf(stderr, "Unable to open file: %s\n", argv[1]);
-            return -1;
-        }
-
-        if (rom) {
-            fclose(rom);
-        }
+        struct Emu emu = {};
+        initEmu(&emu);
+        getFile(&emu, argv[1]);
+        freeEmu(&emu);
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }
