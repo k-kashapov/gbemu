@@ -1,5 +1,6 @@
 #include "cpu.h"
 #include "general.h"
+#include <stdio.h>
 
 enum FLAGS {
     C = 1U << 4U, // Carry flag     - last op carried a bit
@@ -11,5 +12,15 @@ enum FLAGS {
 void execOp(struct CPU *cpu, word opcode) {
     (void) cpu;
     DBG_PRINT("executing opcode 0x%02X\n", opcode);
+
+    switch (opcode) {
+        case 0x00:
+            break;
+        
+        default:
+            fprintf(stderr, "Unknown opcode: 0x%02x\n", opcode);
+            break;
+    }
+
     return;
 }

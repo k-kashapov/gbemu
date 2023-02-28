@@ -50,10 +50,10 @@ int getFile(struct Emu *emu, const char name[static 1]) {
 
 int runEmu(struct Emu *emu) {
     struct CPU cpu = {};
-    cpu.PC = ENTRY_POINT;
-
+    
     while (1) {
         execOp(&cpu, memRead(emu->RAM, cpu.PC++));
+        if (getchar() == 'q') return OK;
     }
 
     return OK;
