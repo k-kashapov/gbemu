@@ -14,7 +14,17 @@ enum ERR_CODES {
 };
 
 // Machine words on z80
-typedef uint8_t  word;
+
+// unsigned word
+typedef uint8_t word;
+
+// signed word
+typedef int8_t sword;
+
+// unsigned double word
 typedef uint16_t dword;
+
+// signed double word
+typedef int16_t sdword;
 
 #endif // GENERAL_H
