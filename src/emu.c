@@ -5,7 +5,6 @@
 #include "file.h"
 #include "general.h"
 #include "memlayout.h"
-#include "cpu.h"
 #include "mem.h"
 
 #define RAM_POISON 0xC0DE
@@ -17,6 +16,8 @@ int initEmu(struct Emu *tgt) {
         return MEM_ALLOC_ERR;
     }
 
+    struct CPU new_cpu = {};
+    tgt->cpu   = new_cpu;
     tgt->RAM   = mem;
     tgt->state = RDY;
 
@@ -49,11 +50,16 @@ int getFile(struct Emu *emu, const char name[static 1]) {
 }
 
 int runEmu(struct Emu *emu) {
-    struct CPU cpu = {};
-    
+    // DEBUG!!!
+    emu->cpu.PC = 0x5001;
+    emu->cpu.A  = 0xAD;
+    emu->cpu.B  = 0xC0;
+    emu->cpu.C  = 0x70;
+    emu->cpu.D  = 0xAB;
+
     while (1) {
-        execOp(&cpu, memRead(emu->RAM, cpu.PC++));
-        if (getchar() == 'q') return OK;
+        execOp(&emu->cpu, emu->RAM, *memPtr(emu->RAM, emu->cpu.PC));
+        emu->cpu.PC++;
     }
 
     return OK;

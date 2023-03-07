@@ -7,7 +7,7 @@ SRCS = main.c src/*.c
 OBJS = $(SRCS:.c=.o)
 HDRS = inc/*.h
 
-.PHONY: all clean
+.PHONY: all clean z80.elf
 
 all: z80.elf
 

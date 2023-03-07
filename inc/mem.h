@@ -1,11 +1,10 @@
 #ifndef MEM_H
 #define MEM_H
 #include "general.h"
+#include "emu.h"
 
-word  memRead (void *buff, size_t pos);
-dword dmemRead(void *buff, size_t pos);
+word *memPtr(void *RAM, dword offs);
 
-void  memWrite(void *buff, size_t pos,  word val);
-void dmemWrite(void *buff, size_t pos, dword val);
+void dump_mem(void *RAM, size_t len);
 
 #endif // MEM_H

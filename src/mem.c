@@ -1,22 +1,17 @@
-#include <unistd.h>
 #include "mem.h"
+#include "general.h"
 
-word memRead(void *buff, size_t pos) {
-    usleep(300000);
-    return ((word *)buff)[pos];
+word *memPtr(void *RAM, dword offs) {
+    return ((word *)RAM + offs);
 }
 
-dword dmemRead(void *buff, size_t pos) {
-    usleep(300000);
-    return ((dword *)buff)[pos];
-}
+void dump_mem(void *RAM, size_t len) {
+    char *as_char = (char *)RAM;
 
-void memWrite(void *buff, size_t pos, word val) {
-    usleep(300000);
-    ((word *)buff)[pos] = val;
-}
-
-void dmemWrite(void *buff, size_t pos, dword val) {
-    usleep(300000);
-    ((dword *)buff)[pos] = val;
+    for (size_t y = 0; y * 10 < len; y++) {
+        for (size_t x = 0; y * 10 + x < len; x++) {
+            printf("|%c| (%d) ", as_char[x + 10 * y], as_char[x + 10 * y]);
+        } 
+        putchar('\n');
+    }
 }

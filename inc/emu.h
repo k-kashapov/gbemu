@@ -1,6 +1,7 @@
 #ifndef EMU_H
 #define EMU_H
 
+#include "cpu.h"
 #include "general.h"
 
 #define CPU_FREQ 4194304 // Hz
@@ -12,6 +13,7 @@ enum STATES {
 
 struct Emu {
     word       *RAM;
+    struct CPU  cpu;
     enum STATES state;
 };
 
