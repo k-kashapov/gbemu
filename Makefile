@@ -12,9 +12,11 @@ HDRS = inc/*.h
 all: z80.elf
 
 z80.elf: $(SRCS) $(HDRS)
-		 ./jsonToC.py > inc/opcodes.h
-	     $(CC) $(SRCS) $(CCFLAGS) -o z80.elf
-	     size z80.elf -Gd
+		 @echo PY jsonToC
+		 @./jsonToC.py > inc/opcodes.h
+		 @echo CC $(SRCS)
+	     @$(CC) $(SRCS) $(CCFLAGS) -o z80.elf
+	     @ls -l z80.elf
 
 dbg: $(SRCS) $(HDRS)
 	$(CC) $(SRCS) $(DBGFLAGS) $(CCFLAGS) -o main.elf	

@@ -1,10 +1,6 @@
 #include "mem.h"
 #include "general.h"
 
-word *memPtr(void *RAM, dword offs) {
-    return ((word *)RAM + offs);
-}
-
 void dump_mem(void *RAM, size_t len) {
     char *as_char = (char *)RAM;
 

@@ -30,7 +30,7 @@ for opcode in jsonopcode["unprefixed"]:
     elif op1 == "NONE":
         op1 = "      0"
     elif op1 == "d8":
-        op1 = "(word*)0"
+        op1 = "memPtr(RAM, cpu->PC + 1)"
     else:
         op1 = "&cpu->" + op1
 

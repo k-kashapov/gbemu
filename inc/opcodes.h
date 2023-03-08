@@ -518,8 +518,8 @@ case 0xd4:	//CALL(&cpu->NC, cpu->a16)
 	cycles = 24; op_len = 3; break;
 case 0xd5:	//PUSH(&cpu->DE, cpu->NONE)
 	cycles = 16; op_len = 1; break;
-case 0xd6:	//SUB((word*)0, cpu->NONE)
-	ALU_A_8(cpu, (word*)0, 	'-');
+case 0xd6:	//SUB(memPtr(RAM, cpu->PC + 1), cpu->NONE)
+	ALU_A_8(cpu, memPtr(RAM, cpu->PC + 1), 	'-');
 	cycles = 8; op_len = 2; break;
 case 0xd7:	//RST(&cpu->10H, cpu->NONE)
 	cycles = 16; op_len = 1; break;
@@ -544,8 +544,8 @@ case 0xe2:	//LD(memPtr(RAM, 0xFF00 + cpu->C), cpu->A)
 	cycles = 8; op_len = 1; break;
 case 0xe5:	//PUSH(&cpu->HL, cpu->NONE)
 	cycles = 16; op_len = 1; break;
-case 0xe6:	//AND((word*)0, cpu->NONE)
-	ALU_A_8(cpu, (word*)0, 	'&');
+case 0xe6:	//AND(memPtr(RAM, cpu->PC + 1), cpu->NONE)
+	ALU_A_8(cpu, memPtr(RAM, cpu->PC + 1), 	'&');
 	cycles = 8; op_len = 2; break;
 case 0xe7:	//RST(&cpu->20H, cpu->NONE)
 	cycles = 16; op_len = 1; break;
@@ -556,8 +556,8 @@ case 0xe9:	//JP(memPtr(RAM, cpu->HL), cpu->NONE)
 	cycles = 4; op_len = 1; break;
 case 0xea:	//LD(memPtr(RAM, cpu->a16), cpu->A)
 	cycles = 16; op_len = 3; break;
-case 0xee:	//XOR((word*)0, cpu->NONE)
-	ALU_A_8(cpu, (word*)0, 	'^');
+case 0xee:	//XOR(memPtr(RAM, cpu->PC + 1), cpu->NONE)
+	ALU_A_8(cpu, memPtr(RAM, cpu->PC + 1), 	'^');
 	cycles = 8; op_len = 2; break;
 case 0xef:	//RST(&cpu->28H, cpu->NONE)
 	cycles = 16; op_len = 1; break;
@@ -571,8 +571,8 @@ case 0xf3:	//DI(      0, cpu->NONE)
 	cycles = 4; op_len = 1; break;
 case 0xf5:	//PUSH(&cpu->AF, cpu->NONE)
 	cycles = 16; op_len = 1; break;
-case 0xf6:	//OR((word*)0, cpu->NONE)
-	ALU_A_8(cpu, (word*)0, 	'?');
+case 0xf6:	//OR(memPtr(RAM, cpu->PC + 1), cpu->NONE)
+	ALU_A_8(cpu, memPtr(RAM, cpu->PC + 1), 	'?');
 	cycles = 8; op_len = 2; break;
 case 0xf7:	//RST(&cpu->30H, cpu->NONE)
 	cycles = 16; op_len = 1; break;
@@ -584,8 +584,8 @@ case 0xfa:	//LD(&cpu->A, memPtr(RAM, cpu->a16))
 	cycles = 16; op_len = 3; break;
 case 0xfb:	//EI(      0, cpu->NONE)
 	cycles = 4; op_len = 1; break;
-case 0xfe:	//CP((word*)0, cpu->NONE)
-	CP_A(cpu, (word*)0);
+case 0xfe:	//CP(memPtr(RAM, cpu->PC + 1), cpu->NONE)
+	CP_A(cpu, memPtr(RAM, cpu->PC + 1));
 	cycles = 8; op_len = 2; break;
 case 0xff:	//RST(&cpu->38H, cpu->NONE)
 	cycles = 16; op_len = 1; break;
