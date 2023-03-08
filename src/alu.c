@@ -1,3 +1,8 @@
+/*
+ * WARNING: Current instuction decode sequence is written really poorly.
+ *          Needs refactoring. May be done in the future.
+ */
+
 #include <stdio.h>
 #include "cpu.h"
 #include "clock.h"
@@ -28,9 +33,9 @@
         res = action;                                   \
         break;
 
-void ALU_A_8(struct CPU *cpu, const word* src, uint32_t cycles, char op) {
+void ALU_A_8(struct CPU *cpu, const word* src, char op) {
     word  old = cpu->A;
-    dword res;
+    dword res = old;
 
     switch (op) {
         OP_AUTO_FLAGS ('+', old + (dword)*src,                 0);       // ADD
@@ -40,15 +45,16 @@ void ALU_A_8(struct CPU *cpu, const word* src, uint32_t cycles, char op) {
         OP_KNOWN_FLAGS('&', old & (dword)*src,                 0, 1, 0); // AND
         OP_KNOWN_FLAGS('|', old | (dword)*src,                 0, 0, 0); // OR
         OP_KNOWN_FLAGS('^', old ^ (dword)*src,                 0, 0, 0); // XOR
+        default:
+            fprintf(stderr, "ERROR: Invalid operation sent to ALU: |%c|(%d)\n", op, op);
+            return;
     }
 
     SET_Z_FLG(res);
     cpu->A = (word)res;
-
-    wait(cycles);
 }
 
-void CP_A(struct CPU *cpu, const word* src, uint32_t cycles) {
+void CP_A(struct CPU *cpu, const word* src) {
     word  old = cpu->A;
     dword res = (dword)old - (dword)*src;
 
@@ -56,11 +62,9 @@ void CP_A(struct CPU *cpu, const word* src, uint32_t cycles) {
     SET_FLAG (N, 1);
     SET_H_FLG(res, old);
     SET_C_FLG(res);
-
-    wait(cycles);
 }
 
-void INC_DEC(struct CPU *cpu, word* src, uint32_t cycles, char op) {
+void INC_DEC_8(struct CPU *cpu, word* src, char op) {
     word  old = *src;
     dword res;
 
@@ -86,6 +90,44 @@ void INC_DEC(struct CPU *cpu, word* src, uint32_t cycles, char op) {
 
     SET_Z_FLG(res);
     SET_H_FLG(old, res);
+}
 
-    wait(cycles);
+// >-----------------<
+//      ADC 16-bit
+// >-----------------<
+
+void ALU_16(struct CPU *cpu, dword *src, char op) {
+    dword old, res;
+    
+    switch (op) {
+        case 'H':
+            old = cpu->HL;
+            res = old + *src;
+            SET_FLAG(N, 0);
+            SET_H_FLG(old, res);
+            SET_C_FLG(res);
+            cpu->HL = res;
+            break;
+
+        case 'S':
+            old = cpu->SP;
+            res = old + (word)*src;
+            SET_FLAG(Z, 0);
+            SET_FLAG(N, 0);
+            SET_H_FLG(old, res);
+            SET_C_FLG(res);
+            cpu->SP = res;
+            break;
+
+        case 'i':
+            *src += 1;
+            break;
+
+        case 'd':
+            *src -= 1;
+            break;
+
+        default:
+            break;
+    }
 }

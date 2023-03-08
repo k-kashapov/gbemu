@@ -12,22 +12,31 @@ enum FLAGS {
     BIT_Z = 1U << 7U, // Zero flag      - last res = 0 
 };
 
-void execOp(struct CPU *cpu, void *RAM, word opcode) {
+int execOp(struct CPU *cpu, void *RAM, word opcode) {
     DBG_PRINT("\nExecuting opcode 0x%02X. A: %04X B: %04X C: %04X D: %04X E: %04X F: %04X H: %04X L: %04X PC: %04X SP: %04X",
                opcode, cpu->A, cpu->B, cpu->C, cpu->D, cpu->E, cpu->flags.as_word, cpu->H, cpu->L, cpu->PC, cpu->SP);
 
+    word cycles = 0, op_len = 0;
+
     switch (opcode) {
-        case 0x00:
-            wait(4);
+        case 0x00: // NOP
+            cycles = 4;
+            op_len = 1;
             break;
+        case 0x10: // STOP
+            return STOP;
         
         #include "opcodes.h"
 
         default:
             wait(4);
             fprintf(stderr, "\nERROR: Unknown opcode: 0x%02x\n", opcode);
+            op_len = 1;
             break;
     }
 
-    return;
+    wait(cycles);
+    cpu->PC += op_len;
+
+    return 0;
 }

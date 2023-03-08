@@ -37,7 +37,14 @@ struct CPU {
     word IME; // Interrupt master enable flag
 };
 
-void execOp(struct CPU *cpu, void *RAM, word opcode);
+enum EXEC_RET {
+    DONE =  0,
+    STOP =  1,
+    HALT =  2,
+    ERR  = -1,
+};
+
+int execOp(struct CPU *cpu, void *RAM, word opcode);
 
 #undef DWORDREG
 

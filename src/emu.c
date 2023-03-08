@@ -57,9 +57,10 @@ int runEmu(struct Emu *emu) {
     emu->cpu.C  = 0x70;
     emu->cpu.D  = 0xAB;
 
-    while (1) {
-        execOp(&emu->cpu, emu->RAM, *memPtr(emu->RAM, emu->cpu.PC));
-        emu->cpu.PC++;
+    int res = 0;
+
+    while (!res) {
+        res = execOp(&emu->cpu, emu->RAM, *memPtr(emu->RAM, emu->cpu.PC));
     }
 
     return OK;

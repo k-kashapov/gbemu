@@ -44,6 +44,7 @@ for opcode in jsonopcode["unprefixed"]:
         op2 = "cpu->" + op2
 
     cycles = jsonopcode["unprefixed"][opcode]["cycles"][0]
+    op_len = jsonopcode["unprefixed"][opcode]["length"]
 
     if group == "x8/alu":
         op = "'?'"
@@ -64,14 +65,34 @@ for opcode in jsonopcode["unprefixed"]:
             case "XOR":
                 op = "'^'"
             case "INC":
-                action = "INC_DEC(cpu, " + str(op1) + ", \t" + str(cycles) + ",\t'i');"
+                action = "INC_DEC_8(cpu, " + str(op1) + ",\t'i');"
             case "DEC":
-                action = "INC_DEC(cpu, " + str(op1) + ", \t" + str(cycles) + ",\t'd');"
+                action = "INC_DEC_8(cpu, " + str(op1) + ",\t'd');"
             case "CP":
-                action = "CP_A(cpu, " + str(op1) + ", " + str(cycles) + ");"
+                action = "CP_A(cpu, " + str(op1) + ");"
                 
         if not action:
-            action = "ALU_A_8(cpu, " + str(op1) + ", \t" + str(cycles) + ", \t" + str(op) + ");"
+            action = "ALU_A_8(cpu, " + str(op1) + ", \t" + str(op) + ");"
+    
+    elif group == "x16/alu":
+        op = "'?'"
 
+        match mnem:
+            case "ADD":
+                if op1 == "cpu->HL":
+                    op = "'H'"
+                else:
+                    op = "'S'"
+            case "INC":
+                op = "'i'"
+            case "DEC":
+                op = "'d'"
+
+        action = "ALU_16(cpu, " + str(op1) + ", \t" + str(op) + ");"
+
+    print("case", opcode + ":\t//" + mnem + "(" + op1 + ", " + op2 + ")")
+    
     if action:
-        print("case", opcode + ": " + action + " break;" + "\t//" + mnem + "(" + op1 + ", " + op2 + ")")
+        print("\t" + action)
+    
+    print("\tcycles = " + str(cycles) + "; op_len = " + str(op_len) + "; break;")
