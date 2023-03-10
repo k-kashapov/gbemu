@@ -44,7 +44,7 @@ enum EXEC_RET {
     ERR  = -1,
 };
 
-int execOp(struct CPU *cpu, void *RAM, word opcode);
+int execOp(struct CPU *cpu, void *RAM);
 
 #undef DWORDREG
 

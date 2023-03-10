@@ -2,6 +2,7 @@
 #define INSTRUCTIONS_H
 
 #include "cpu.h"
+#include "lsm.h"
 
 void ALU_A_8  (struct CPU *cpu, const word *src, char op);
 void CP_A     (struct CPU *cpu, const word *src);

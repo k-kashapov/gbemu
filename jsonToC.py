@@ -21,27 +21,39 @@ for opcode in jsonopcode["unprefixed"]:
 
     action = ""
 
+    print("case", opcode + ":\t//" + mnem + "(" + op1 + ", " + op2 + ")")
+
     if "(" in op1:
         if (op1 == "(C)"):
-            op1 = "memPtr(RAM, 0xFF00 + cpu->C)"
+            op1 = "MEM(RAM, 0xFF00 + cpu->C)"
+        elif (op1 == "(a8)"):
+            op1 = "MEM(RAM, 0xFF00 + *imm8(RAM, cpu))"
+        elif (op1 == "(a16)"):
+            op1 = "MEM(RAM, *imm16(RAM, cpu))"
         else:
             op1 = op1.strip("()")
-            op1 = "memPtr(RAM, cpu->" + op1 + ")"
+            op1 = "MEM(RAM, cpu->" + op1 + ")"
     elif op1 == "NONE":
         op1 = "      0"
     elif op1 == "d8":
-        op1 = "memPtr(RAM, cpu->PC + 1)"
+        op1 = "imm8(RAM, cpu)"
     else:
         op1 = "&cpu->" + op1
 
     if "(" in op2:
         if (op2 == "(C)"):
-            op2 = "memPtr(RAM, 0xFF00 + cpu->C)"
+            op2 = "MEM(RAM, 0xFF00 + cpu->C)"
+        elif (op2 == "(a8)"):
+            op2 = "MEM(RAM, 0xFF00 + *imm8(RAM, cpu))"
+        elif (op2 == "(a16)"):
+            op2 = "MEM(RAM, *imm16(RAM, cpu))"
         else:
             op2 = op2.strip("()")
-            op2 = "memPtr(RAM, cpu->" + op2 + ")"
+            op2 = "MEM(RAM, cpu->" + op2 + ")"
+    elif op2 == "d8":
+        op2 = "imm8(RAM, cpu)"
     else:
-        op2 = "cpu->" + op2
+        op2 = "&cpu->" + op2
 
     cycles = jsonopcode["unprefixed"][opcode]["cycles"][0]
     op_len = jsonopcode["unprefixed"][opcode]["length"]
@@ -65,14 +77,14 @@ for opcode in jsonopcode["unprefixed"]:
             case "XOR":
                 op = "'^'"
             case "INC":
-                action = "INC_DEC_8(cpu, " + str(op1) + ",\t'i');"
+                action = "INC_DEC_8(cpu, " + str(op1) + ", 'i');"
             case "DEC":
-                action = "INC_DEC_8(cpu, " + str(op1) + ",\t'd');"
+                action = "INC_DEC_8(cpu, " + str(op1) + ", 'd');"
             case "CP":
                 action = "CP_A(cpu, " + str(op1) + ");"
                 
         if not action:
-            action = "ALU_A_8(cpu, " + str(op1) + ", \t" + str(op) + ");"
+            action = "ALU_A_8(cpu, " + str(op1) + ", " + str(op) + ");"
     
     elif group == "x16/alu":
         op = "'?'"
@@ -88,11 +100,21 @@ for opcode in jsonopcode["unprefixed"]:
             case "DEC":
                 op = "'d'"
 
-        action = "ALU_16(cpu, " + str(op1) + ", \t" + str(op) + ");"
+        action = "ALU_16(cpu, " + str(op1) + ", " + str(op) + ");"
 
-    print("case", opcode + ":\t//" + mnem + "(" + op1 + ", " + op2 + ")")
-    
+    elif group == "x8/lsm":
+        match mnem:
+            case "LD":
+                action = "LD_8(" + str(op1) + ", " + str(op2) + ");"
+            case "LDI":
+                action = "LDI_8(RAM, cpu, " + str(0 if op2 == "&cpu->A" else 1) + ");"
+            case "LDD":
+                action = "LDD_8(RAM, cpu, " + str(0 if op2 == "&cpu->A" else 1) + ");"
+            case "LDH":
+                action = "LD_8(" + op1 + ", " + op2 + ");"
+
     if action:
         print("\t" + action)
+        # print("\tprintf(\"\\n%s\", \"" + mnem + "\\n\");")
     
-    print("\tcycles = " + str(cycles) + "; op_len = " + str(op_len) + "; break;")
+    print("\tcycles = " + str(cycles) + "; op_len = " + str(op_len) + "; break;\n")

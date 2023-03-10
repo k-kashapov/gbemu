@@ -60,7 +60,7 @@ int runEmu(struct Emu *emu) {
     int res = 0;
 
     while (!res) {
-        res = execOp(&emu->cpu, emu->RAM, *memPtr(emu->RAM, emu->cpu.PC));
+        res = execOp(&emu->cpu, emu->RAM);
     }
 
     return OK;

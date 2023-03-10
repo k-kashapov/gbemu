@@ -3,5 +3,5 @@
 #include <unistd.h>
 
 void wait(uint32_t cycles) {
-    usleep(cycles * 100000);
+    usleep(cycles * 50000);
 }
