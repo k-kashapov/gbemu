@@ -1,4 +1,5 @@
 case 0x01:	//LD(BC, d16)
+	LD_16(&cpu->BC, imm16(RAM, cpu));
 	cycles = 12; op_len = 3; break;
 
 case 0x02:	//LD((BC), A)
@@ -25,6 +26,7 @@ case 0x07:	//RLCA(NONE, NONE)
 	cycles = 4; op_len = 1; break;
 
 case 0x08:	//LD((a16), SP)
+	LD_16(MEM(RAM, *imm16(RAM, cpu)), &cpu->SP);
 	cycles = 20; op_len = 3; break;
 
 case 0x09:	//ADD(HL, BC)
@@ -55,6 +57,7 @@ case 0x0f:	//RRCA(NONE, NONE)
 	cycles = 4; op_len = 1; break;
 
 case 0x11:	//LD(DE, d16)
+	LD_16(&cpu->DE, imm16(RAM, cpu));
 	cycles = 12; op_len = 3; break;
 
 case 0x12:	//LD((DE), A)
@@ -114,6 +117,7 @@ case 0x20:	//JR(NZ, r8)
 	cycles = 12; op_len = 2; break;
 
 case 0x21:	//LD(HL, d16)
+	LD_16(&cpu->HL, imm16(RAM, cpu));
 	cycles = 12; op_len = 3; break;
 
 case 0x22:	//LDI((HL), A)
@@ -175,6 +179,7 @@ case 0x30:	//JR(NC, r8)
 	cycles = 12; op_len = 2; break;
 
 case 0x31:	//LD(SP, d16)
+	LD_16(&cpu->SP, imm16(RAM, cpu));
 	cycles = 12; op_len = 3; break;
 
 case 0x32:	//LDD((HL), A)
@@ -747,6 +752,7 @@ case 0xc0:	//RET(NZ, NONE)
 	cycles = 20; op_len = 1; break;
 
 case 0xc1:	//POP(BC, NONE)
+	POP(RAM, cpu, &cpu->BC);
 	cycles = 12; op_len = 1; break;
 
 case 0xc2:	//JP(NZ, a16)
@@ -759,6 +765,7 @@ case 0xc4:	//CALL(NZ, a16)
 	cycles = 24; op_len = 3; break;
 
 case 0xc5:	//PUSH(BC, NONE)
+	PUSH(RAM, cpu, &cpu->BC);
 	cycles = 16; op_len = 1; break;
 
 case 0xc6:	//ADD(A, d8)
@@ -797,6 +804,7 @@ case 0xd0:	//RET(NC, NONE)
 	cycles = 20; op_len = 1; break;
 
 case 0xd1:	//POP(DE, NONE)
+	POP(RAM, cpu, &cpu->DE);
 	cycles = 12; op_len = 1; break;
 
 case 0xd2:	//JP(NC, a16)
@@ -806,6 +814,7 @@ case 0xd4:	//CALL(NC, a16)
 	cycles = 24; op_len = 3; break;
 
 case 0xd5:	//PUSH(DE, NONE)
+	PUSH(RAM, cpu, &cpu->DE);
 	cycles = 16; op_len = 1; break;
 
 case 0xd6:	//SUB(d8, NONE)
@@ -839,6 +848,7 @@ case 0xe0:	//LDH((a8), A)
 	cycles = 12; op_len = 2; break;
 
 case 0xe1:	//POP(HL, NONE)
+	POP(RAM, cpu, &cpu->HL);
 	cycles = 12; op_len = 1; break;
 
 case 0xe2:	//LD((C), A)
@@ -846,6 +856,7 @@ case 0xe2:	//LD((C), A)
 	cycles = 8; op_len = 1; break;
 
 case 0xe5:	//PUSH(HL, NONE)
+	PUSH(RAM, cpu, &cpu->HL);
 	cycles = 16; op_len = 1; break;
 
 case 0xe6:	//AND(d8, NONE)
@@ -878,6 +889,7 @@ case 0xf0:	//LDH(A, (a8))
 	cycles = 12; op_len = 2; break;
 
 case 0xf1:	//POP(AF, NONE)
+	POP(RAM, cpu, &cpu->AF);
 	cycles = 12; op_len = 1; break;
 
 case 0xf2:	//LD(A, (C))
@@ -888,6 +900,7 @@ case 0xf3:	//DI(NONE, NONE)
 	cycles = 4; op_len = 1; break;
 
 case 0xf5:	//PUSH(AF, NONE)
+	PUSH(RAM, cpu, &cpu->AF);
 	cycles = 16; op_len = 1; break;
 
 case 0xf6:	//OR(d8, NONE)
@@ -897,10 +910,12 @@ case 0xf6:	//OR(d8, NONE)
 case 0xf7:	//RST(30H, NONE)
 	cycles = 16; op_len = 1; break;
 
-case 0xf8:	//LD(HL, SP+r8)
+case 0xf8:	//LDHL(SP, r8)
+	LDHL_16(RAM, cpu);
 	cycles = 12; op_len = 2; break;
 
 case 0xf9:	//LD(SP, HL)
+	LD_16(&cpu->SP, &cpu->HL);
 	cycles = 8; op_len = 1; break;
 
 case 0xfa:	//LD(A, (a16))

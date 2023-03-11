@@ -3,7 +3,7 @@
 #include "general.h"
 #include "emu.h"
 
-inline word *MEM(void *RAM, dword offs) { return (word *)RAM + offs; }
+__always_inline void *MEM(void *RAM, dword offs)  { return  (word *)RAM + offs; }
 
 void dump_mem(void *RAM, size_t len);
 

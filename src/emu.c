@@ -56,6 +56,7 @@ int runEmu(struct Emu *emu) {
     emu->cpu.B  = 0xC0;
     emu->cpu.C  = 0x70;
     emu->cpu.D  = 0xAB;
+    emu->cpu.SP = 0x7070;
 
     int res = 0;
 

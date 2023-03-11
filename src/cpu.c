@@ -14,7 +14,7 @@ enum FLAGS {
 };
 
 int execOp(struct CPU *cpu, void *RAM) {
-    word opcode = *MEM(RAM, cpu->PC);
+    word opcode = *(word *)MEM(RAM, cpu->PC);
 
     DBG_PRINT("\nExecuting opcode 0x%02X. A: %04X B: %04X C: %04X D: %04X E: %04X F: %04X H: %04X L: %04X PC: %04X SP: %04X",
                opcode, cpu->A, cpu->B, cpu->C, cpu->D, cpu->E, cpu->flags.as_word, cpu->H, cpu->L, cpu->PC, cpu->SP);

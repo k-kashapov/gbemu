@@ -14,19 +14,25 @@
 
 struct CPU {    
     /* REGISTERS */
-    word  A;
-
     union {
         struct {
-            word RSV : 4;
-            word C   : 1;
-            word H   : 1;
-            word N   : 1;
-            word Z   : 1;
-        } __attribute__ ((packed));
+            word  A;
 
-        word as_word;
-    } flags;
+            union {
+                struct {
+                    word RSV : 4;
+                    word C   : 1;
+                    word H   : 1;
+                    word N   : 1;
+                    word Z   : 1;
+                } __attribute__ ((packed));
+
+                word as_word;
+            } flags;
+        };
+
+        dword AF;
+    };
 
     DWORDREG(B, C);
     DWORDREG(D, E);
