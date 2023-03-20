@@ -9,8 +9,13 @@ size_t file_len(const char name[static 1]) {
     return res.st_size;
 }
 
-int readFile(void *dst, const char name[static 1]) {
+int readFile(void *dst, const char name[static 1], unsigned max_len) {
     size_t len = file_len(name);
+    if (len > max_len) {
+        fprintf(stderr, "File too long: %lu > %u\n", len, max_len);
+        return -1;
+    }
+
     DBG_PRINT("File size = %lu\n"
               "Opening...\n", len);
 

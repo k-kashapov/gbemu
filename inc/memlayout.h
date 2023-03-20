@@ -41,6 +41,8 @@
 #define INTER_RAMH 0xFF80
 #define INT_ENBL_R 0xFFFF
 
+#define MEM_SIZE   0x10000
+
 #define ENTRY_POINT 0x0100
 
 // Title information offsets

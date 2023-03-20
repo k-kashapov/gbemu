@@ -12,7 +12,7 @@ void usage(void) {
 int main(int argc, const char *argv[static argc + 1]) {
     if (argc < 2) {
         usage();
-        return 0;
+        return EXIT_SUCCESS;
     } else {
         struct Emu emu = {};
         initEmu(&emu);

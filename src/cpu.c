@@ -14,30 +14,28 @@ enum FLAGS {
     BIT_Z = 1U << 7U, // Zero flag      - last res = 0 
 };
 
-#define TOP_NIBBLE(val) ((val) & 0xF0)
-#define BOT_NIBBLE(val) ((val) & 0x0F)
-
 int execOp(struct CPU *cpu, void *RAM) {
     word opcode = MEM8(RAM, cpu->PC);
 
     DBG_PRINT("Executing opcode 0x%02X. A: %04X B: %04X C: %04X D: %04X E: %04X F: %04X H: %04X L: %04X PC: %04X SP: %04X\n",
                opcode, cpu->A, cpu->B, cpu->C, cpu->D, cpu->E, cpu->flags.as_word, cpu->H, cpu->L, cpu->PC, cpu->SP);
     
+    int res = 0;
     cpu->PC++;
 
     // Check if 8bit load or 8 bit alu
-    switch (TOP_NIBBLE(opcode)) {
-        case 0x40:
-        case 0x50:
-        case 0x60:
-        case 0x70:
-            // LD
+    switch (HI_NIBBLE(opcode) >> 4) {
+        case 0x4:
+        case 0x5:
+        case 0x6:
+        case 0x7:
+            res = LD8(cpu, RAM, opcode);
             goto finish;
 
-        case 0x80:
-        case 0x90:
-        case 0xA0:
-        case 0xB0:
+        case 0x8:
+        case 0x9:
+        case 0xA:
+        case 0xB:
             // ALU
             goto finish;
 
@@ -50,9 +48,8 @@ int execOp(struct CPU *cpu, void *RAM) {
             wait(4);
             break;
         case 0x10: // STOP
-            return STOP;
-        case 0x76: // HALT TODO: check
-            return HALT;
+            res = STOP;
+            break;
 
         default:
             wait(4);
@@ -61,5 +58,5 @@ int execOp(struct CPU *cpu, void *RAM) {
     }
 
 finish:
-    return 0;
+    return res;
 }

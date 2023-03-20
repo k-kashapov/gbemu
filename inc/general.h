@@ -27,4 +27,7 @@ typedef uint16_t dword;
 // signed double word
 typedef int16_t sdword;
 
+#define HI_NIBBLE(val) ((val) & 0xF0)
+#define LO_NIBBLE(val) ((val) & 0x0F)
+
 #endif // GENERAL_H
