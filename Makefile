@@ -1,6 +1,6 @@
 CC = gcc
 
-CCFLAGS  = -I inc -Wall -Wextra -Os
+CCFLAGS  = -I inc -Wall -Wextra -Os -s
 DBGFLAGS = -fsanitize=address -O0
 
 SRCS = main.c src/*.c

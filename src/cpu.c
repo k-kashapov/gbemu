@@ -17,8 +17,8 @@ enum FLAGS {
 int execOp(struct CPU *cpu, void *RAM) {
     word opcode = MEM8(RAM, cpu->PC);
 
-    DBG_PRINT("Executing opcode 0x%02X. A: %04X B: %04X C: %04X D: %04X E: %04X F: %04X H: %04X L: %04X PC: %04X SP: %04X\n",
-               opcode, cpu->A, cpu->B, cpu->C, cpu->D, cpu->E, cpu->flags.as_word, cpu->H, cpu->L, cpu->PC, cpu->SP);
+    DBG_PRINT("Executing opcode 0x%02X.   B: %02X   C: %02X   D: %02X   E: %02X   H: %02X   L: %02X   A: %02X   F: %02X   PC: %04X   SP: %04X\n",
+               opcode, cpu->B, cpu->C, cpu->D, cpu->E, cpu->H, cpu->L, cpu->A, cpu->flags.as_word, cpu->PC, cpu->SP);
     
     int res = 0;
     cpu->PC++;
@@ -50,6 +50,61 @@ int execOp(struct CPU *cpu, void *RAM) {
         case 0x10: // STOP
             res = STOP;
             break;
+
+        // Other 8bit ALU operations
+        case 0x02:
+            DBG_PRINT("LD (BC), A\n");
+            LDmA(BC); break;
+        case 0x12:
+            DBG_PRINT("LD (DE), A\n");
+            LDmA(DE); break;
+        case 0x22:
+            DBG_PRINT("LD (HL+), A\n");
+            LDIHLA(); break;
+        case 0x32:
+            DBG_PRINT("LD (HL-), A\n");
+            LDDHLA(); break;
+        case 0x06:
+            DBG_PRINT("LD B, imm8\n");
+            LDri(B); break;
+        case 0x16:
+            DBG_PRINT("LD D, imm8\n");
+            LDri(D); break;
+        case 0x26:
+            DBG_PRINT("LD H, imm8\n");
+            LDri(H); break;
+        case 0x36:
+            DBG_PRINT("LD (HL), imm8\n");
+            LDHLi(); break;
+        case 0x0A:
+            DBG_PRINT("LD A, (BC)\n");
+            LDAm(BC); break;
+        case 0x1A:
+            DBG_PRINT("LD A, (DE)\n");
+            LDAm(DE); break;
+        case 0x2A:
+            DBG_PRINT("LD A, (HL+)\n");
+            LDIAHL(); break;
+        case 0x3A:
+            DBG_PRINT("LD A, (HL-)\n");
+            LDDAHL(); break;
+        case 0x0E:
+            DBG_PRINT("LD C, imm8\n");
+            LDri(C); break;
+        case 0x1E:
+            DBG_PRINT("LD E, imm8\n");
+            LDri(E); break;
+        case 0x2E:
+            DBG_PRINT("LD L, imm8\n");
+            LDri(L); break;
+        case 0x3E:
+            DBG_PRINT("LD A, imm8\n");
+            LDri(A); break;
+
+        // Jumps
+        case 0xC3:
+            DBG_PRINT("JUMP 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
+            JP(); break;
 
         default:
             wait(4);

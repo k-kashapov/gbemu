@@ -4,10 +4,8 @@
 #include "general.h"
 #include "cpu.h"
 #include "mem.h"
+#include "lsm.h"
 
-__always_inline void JP(struct CPU *cpu, dword *src) {
-    DBG_PRINT("JUMP 0x%x -> 0x%x\n", cpu->PC, *src);
-    cpu->PC = *src;
-}
+#define JP() wait(16); cpu->PC = IMM16;
 
 #endif // JUMPS_H
