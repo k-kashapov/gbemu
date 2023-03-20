@@ -1,6 +1,6 @@
 CC = gcc
 
-CCFLAGS  = -I inc -Wall -Wextra -Os -s
+CCFLAGS  = -I inc -Wall -Wextra -Os
 DBGFLAGS = -fsanitize=address -O0
 
 SRCS = main.c src/*.c
@@ -12,11 +12,12 @@ HDRS = inc/*.h
 all: z80.elf
 
 z80.elf: $(SRCS) $(HDRS)
-		 @echo PY jsonToC
-		 @./jsonToC.py > inc/opcodes.h
 		 @echo CC $(SRCS)
 	     @$(CC) $(SRCS) $(CCFLAGS) -o z80.elf
 	     @ls -l z80.elf
+
+%.lst: %.c
+	$(CC) $< -I inc -Wall -Wextra -Os -o $@ -S -s
 
 dbg: $(SRCS) $(HDRS)
 	$(CC) $(SRCS) $(DBGFLAGS) $(CCFLAGS) -o main.elf	

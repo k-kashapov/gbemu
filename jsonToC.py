@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+# WARNING: Deprecated. Do not use. However, kept for historical purpose
+
 import json
 
 opfile = open("opcodes.json", "r")
@@ -39,6 +41,8 @@ for opcode in jsonopcode["unprefixed"]:
         op1 = "imm8(RAM, cpu)"
     elif op1 == "d16":
         op1 = "imm16(RAM, cpu)"
+    elif op1 == "a16":
+        op1 = "imm16(RAM, cpu)"
     else:
         op1 = "&cpu->" + op1
 
@@ -56,10 +60,12 @@ for opcode in jsonopcode["unprefixed"]:
         op2 = "imm8(RAM, cpu)"
     elif op2 == "d16":
         op2 = "imm16(RAM, cpu)"
+    elif op2 == "a16":
+        op2 = "imm16(RAM, cpu)"
     else:
         op2 = "&cpu->" + op2
 
-    cycles = jsonopcode["unprefixed"][opcode]["cycles"][0]
+    # cycles = jsonopcode["unprefixed"][opcode]["cycles"][0]
     op_len = jsonopcode["unprefixed"][opcode]["length"]
 
     if group == "x8/alu":
@@ -106,30 +112,12 @@ for opcode in jsonopcode["unprefixed"]:
 
         action = "ALU_16(cpu, " + str(op1) + ", " + str(op) + ");"
 
-    elif group == "x8/lsm":
-        match mnem:
-            case "LD":
-                action = "LD_8(" + str(op1) + ", " + str(op2) + ");"
-            case "LDI":
-                action = "LDI_8(RAM, cpu, " + str(0 if op2 == "&cpu->A" else 1) + ");"
-            case "LDD":
-                action = "LDD_8(RAM, cpu, " + str(0 if op2 == "&cpu->A" else 1) + ");"
-            case "LDH":
-                action = "LD_8(" + op1 + ", " + op2 + ");"
-
-    elif group == "x16/lsm":
-        match mnem:
-            case "LD":
-                action = "LD_16(" + str(op1) + ", " + str(op2) + ");"
-            case "LDHL":
-                action = "LDHL_16(RAM, cpu);"
-            case "PUSH":
-                action = "PUSH(RAM, cpu, " + str(op1) + ");"
-            case "POP":
-                action = "POP(RAM, cpu, " + str(op1) + ");"
-                
     if action:
         print("\t" + action)
-        # print("\tprintf(\"\\n%s\", \"" + mnem + "\\n\");")
+
+    if op_len > 1:
+        print("\tcpu->PC += " + str(op_len - 1) + "; ", end = "")
+
+    # print("\tDBG_PRINT(\"" + mnem + "(" + str(op1) + ", " + str(op2) + ")\\n\");")
+    # print("\tprintf(\"\\n%s\", \"" + mnem + "\\n\");")
     
-    print("\tcycles = " + str(cycles) + "; op_len = " + str(op_len) + "; break;\n")

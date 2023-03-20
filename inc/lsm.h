@@ -1,81 +1,80 @@
-#ifndef LOADS_H
-#define LOADS_H
+#ifndef LSM_H
+#define LSM_H
 
 // LOAD-STORE MOUDLE
 
 #include "general.h"
 #include "cpu.h"
 #include "mem.h"
-#include <sys/cdefs.h>
 
 // >-------------------<
 //      8-bit LOADS
 // >-------------------<
 
-// Ptr to word at PC + 1
-__always_inline word *imm8(void *RAM, struct CPU *cpu) {
-    return ((word *)RAM) + cpu->PC + 1;
+// Ptr to a word at PC
+__always_inline word imm8(void *RAM, struct CPU *cpu) {
+    return MEM8(RAM, cpu->PC);
 }
 
-__always_inline void LD_8(word *dst, word *src) {
-    *dst = *src;
+// Ptr to a dword at PC
+__always_inline dword imm16(void *RAM, struct CPU *cpu) {
+    return MEM16(RAM, cpu->PC);
 }
 
-__always_inline void LDD_8(void *RAM, struct CPU *cpu, int to_register) {
-    if (to_register) {
-        // LDD (A, (HL))
-        cpu->A = *(word *)MEM(RAM, cpu->HL--);
-    } else {
-        *(word *)MEM(RAM, cpu->HL--) = cpu->A;
-    }
-}
+#define IMM8  imm8(RAM, cpu)
+#define IMM16 imm16(RAM, cpu)
 
-__always_inline void LDI_8(void *RAM, struct CPU *cpu, int to_register) {
-    if (to_register) {
-        // LDD (A, (HL))
-        cpu->A = *(word *)MEM(RAM, cpu->HL++);
-    } else {
-        *(word *)MEM(RAM, cpu->HL++) = cpu->A;
-    }
-}
+// Memory value at (HL)
+#define HL8 MEM8 (RAM, cpu->HL)
+
+// Memory ptr to (HL)
+#define HL8p MEMp8(RAM, cpu->HL)
+
+#define LD(dst, src)   (dst) = (src); wait(4); break
+#define LDrr(dst, src) LD(cpu->dst, cpu->src);
+#define LDri(dst, src) LD(cpu->dst, IMM8);
+#define LDrHL(dst)     LD(cpu->dst, HL8);
+#define LDHLr(src)     LD(*HL8p, cpu->dst);
+#define LDHLi          LD(*HL8p, IMM8);
+
+// LD A, [(BC), (DE)]
+#define LDAm(src) LD(cpu->A, MEM8(RAM, cpu->src));
+
+// LD [(BC), (DE)], A
+#define LDmA(dst) LD(*MEMp8(RAM, cpu->src), cpu->A);
+
+// LD A, (nn)
+#define LDAd(src) LD(cpu->A, MEM8(RAM, IMM16));
+
+// LD (nn), A
+#define LDdA(dst) LD(*MEMp8(RAM, IMM16), cpu->A);
+
+// LD A, (0xFF00 + C)
+#define LDHAC LD(cpu->A, MEM8(RAM, 0xFF00 + cpu->C));
+
+// LD (0xFF00 + C), A
+#define LDHCA LD(*MEMp8(RAM, 0xFF00 + cpu->C), cpu->A);
+
+// LD A, (0xFF00 + n)
+#define LDHAn LD(cpu->A, MEM8(RAM, 0xFF00 + IMM8));
+
+// LD (0xFF00 + n), A
+#define LDHnA LD(*MEMp8(RAM, 0xFF00 + IMM8), cpu->A);
+
+// LD A, (HL--)
+#define LDDAHL LD(cpu->A, MEM8(RAM, cpu->HL--));
+
+// LD (HL--), A
+#define LDDHLA LD(*MEM8(RAM, cpu->HL--), cpu->A);
+
+// LD A, (HL++)
+#define LDIAHL LD(cpu->A, MEM8(RAM, cpu->HL++));
+
+// LD (HL++), A
+#define LDIHLA LD(*MEM8(RAM, cpu->HL++), cpu->A);
 
 // >--------------------<
 //      16-bit LOADS
 // >--------------------<
 
-// Ptr to dword at PC + 1
-__always_inline dword *imm16(void *RAM, struct CPU *cpu) {
-    return (dword *)((word *)RAM + cpu->PC + 1);
-}
-
-__always_inline void LD_16(dword *dst, dword *src) {
-    *dst = *src;
-}
-
-#define SET_FLAG(FLG, val)  do cpu->flags.FLG = (val); while(0)
-
-__always_inline void LDHL_16(void *RAM, struct CPU *cpu) {
-    dword old = cpu->SP;
-    dword res = old + *(sword *)imm8(RAM, cpu);
-    cpu->HL = *(dword *)MEM(RAM, res);
-    SET_FLAG(Z, 0);
-    SET_FLAG(N, 0);
-    SET_FLAG(H,   (res & 0xF0) != (old & 0xF0));
-    SET_FLAG(C, (res & 0xFF00) != (old & 0xFF00));
-}
-
-#undef SET_FLAG
-
-// WARNING: Massive bugs expected here
-
-__always_inline void PUSH(void *RAM, struct CPU *cpu, dword *src) {
-    *(dword *)MEM(RAM, cpu->SP - 1) = *src;
-    cpu->SP -= 2;
-}
-
-__always_inline void POP(void *RAM, struct CPU *cpu, dword *dst) {
-    *dst = *(word *)MEM(RAM, cpu->SP);
-    cpu->SP += 2;
-}
-
-#endif // LOADS_H
+#endif // LSM_H

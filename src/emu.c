@@ -51,7 +51,7 @@ int getFile(struct Emu *emu, const char name[static 1]) {
 
 int runEmu(struct Emu *emu) {
     // DEBUG!!!
-    emu->cpu.PC = 0x5001;
+    emu->cpu.PC = 0x100;
     emu->cpu.A  = 0xAD;
     emu->cpu.B  = 0xC0;
     emu->cpu.C  = 0x70;
