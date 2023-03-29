@@ -15,7 +15,7 @@ enum FLAGS {
 };
 
 int execOp(struct CPU *cpu, void *RAM) {
-    word opcode = MEM8(RAM, cpu->PC);
+    word opcode = ((word *)RAM)[cpu->PC];
 
     DBG_PRINT("Executing opcode 0x%02X.   B: %02X   C: %02X   D: %02X   E: %02X   H: %02X   L: %02X   A: %02X   F: %02X   PC: %04X   SP: %04X\n",
                opcode, cpu->B, cpu->C, cpu->D, cpu->E, cpu->H, cpu->L, cpu->A, cpu->flags.as_word, cpu->PC, cpu->SP);
@@ -122,7 +122,7 @@ int execOp(struct CPU *cpu, void *RAM) {
         // Jumps
         case 0xC3:
             DBG_PRINT("JUMP 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
-            JP(); break;
+            JPi(); break;
 
         default:
             wait(4);

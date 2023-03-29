@@ -38,9 +38,9 @@
 #define SBCHL()         SUB(cpu->A, HL8 + cpu->flags.C);
 #define SBCi()          SUB(cpu->A, IMM8 + cpu->flags.C);
 
-#define CP(what) wait(4); SET_FLAG(N, 1); old = cpu->A; res = (cpu->A - cpu->what);
-#define CPHL()   wait(4); SET_FLAG(N, 1); old = cpu->A; res = (cpu->A - HL8);
-#define CPi()    wait(4); SET_FLAG(N, 1); old = cpu->A; res = (cpu->A - IMM8);
+#define CPr(what) wait(4); SET_FLAG(N, 1); old = cpu->A; res = (cpu->A - cpu->what);
+#define CPHL()    wait(4); SET_FLAG(N, 1); old = cpu->A; res = (cpu->A - HL8);
+#define CPi()     wait(4); SET_FLAG(N, 1); old = cpu->A; res = (cpu->A - IMM8);
 
 #define INC(what)  wait(4); SET_FLAG(N, 0); old = what; res = ((what) + 1);
 #define INCr(what) INC(cpu->what);
@@ -75,6 +75,7 @@
 #define SCF() wait(4); SET_FLAG(N, 0); SET_FLAG(H, 0); SET_FLAG(C, 1);
 
 #define DAA() wait(4); SET_FLAG(H, 0); ?? // TODO: implement
+#define CPL() wait(4); SET_FLAG(N, 1); SET_FLAG(H, 1); cpu->A = ~cpu->A;
 
 // >-----------------<
 //      ALU 16-bit

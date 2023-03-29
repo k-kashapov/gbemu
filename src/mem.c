@@ -12,12 +12,12 @@ word *MEMp8(void *RAM, dword offs) {
 }
 
 dword MEM16 (void *RAM, dword offs) {
-    wait(4);
+    wait(8);
     return *(dword *)((word *)RAM + offs);
 }
 
 dword *MEMp16(void *RAM, dword offs) { 
-    wait(4);
+    wait(8);
     return (dword *)((word *)RAM + offs);
 }
 

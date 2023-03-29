@@ -32,9 +32,9 @@ __always_inline dword imm16(void *RAM, struct CPU *cpu) {
 // Memory ptr to (HL)
 #define HL8p MEMp8(RAM, cpu->HL)
 
-#define LD(dst, src)   wait(4); (dst) = (src);
-#define LDri(dst)      LD(cpu->dst, IMM8);
-#define LDHLi()        LD(   *HL8p, IMM8);
+#define LD(dst, src) wait(4); (dst) = (src);
+#define LDri(dst)    LD(cpu->dst, IMM8);
+#define LDHLi()      LD(   *HL8p, IMM8);
 
 // LD A, [(BC), (DE)]
 #define LDAm(src) LD(cpu->A, MEM8(RAM, cpu->src));

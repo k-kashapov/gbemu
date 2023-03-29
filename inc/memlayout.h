@@ -1,6 +1,8 @@
 #ifndef MEMLAYOUT_H
 #define MEMLAYOUT_H
 
+// More detailed at http://gameboy.mongenel.com/dmg/asmmemmap.html
+
 /*
          Interrupt Enable Register
     FFFF --------------------------- INT_ENBL_R
