@@ -5,16 +5,16 @@
 #include "memlayout.h"
 #include "file.h"
 
-void usage(void) {
+static void usage(void) {
     printf("USAGE: z80.elf [FILE].gb\n");
 }
 
-int main(int argc, const char *argv[static argc + 1]) {
+int main(int argc, const char **argv) {
     if (argc < 2) {
         usage();
         return EXIT_SUCCESS;
     } else {
-        struct Emu emu = {};
+        struct Emu emu = {0};
         initEmu(&emu);
 
         int err = getFile(&emu, argv[1]);

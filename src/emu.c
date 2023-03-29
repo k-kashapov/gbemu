@@ -17,7 +17,7 @@ int initEmu(struct Emu *tgt) {
         return MEM_ALLOC_ERR;
     }
 
-    struct CPU new_cpu = {};
+    struct CPU new_cpu = {0};
     tgt->cpu   = new_cpu;
     tgt->RAM   = mem;
     tgt->state = RDY;

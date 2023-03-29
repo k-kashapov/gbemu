@@ -8,22 +8,23 @@
 #define LDrHL(dst)     LD(*(dst),    HL8);
 #define LDHLr(src)     LD( *HL8p, *(src));
 
+// TODO: Use MACROS instead of bitfields
 struct LD8op {
-    uint8_t src  : 3;
-    uint8_t dst  : 3;
-    uint8_t code : 2;
+    unsigned int src  : 3;
+    unsigned int dst  : 3;
+    unsigned int code : 2;
 };
 
 // Possible bitfield values for dst and src
 enum TARGETS {
-    B  = 0b000,
-    C  = 0b001,
-    D  = 0b010,
-    E  = 0b011,
-    H  = 0b100,
-    L  = 0b101,
-    HL = 0b110,
-    A  = 0b111,
+    B  = 0x0,
+    C  = 0x1,
+    D  = 0x2,
+    E  = 0x3,
+    H  = 0x4,
+    L  = 0x5,
+    HL = 0x6,
+    A  = 0x7,
 };
 
 // Need to do this due to little endianness
@@ -38,12 +39,12 @@ int LD8(struct CPU *cpu, void *RAM, word opcode) {
         }
 
         word *src = cpu->REGISTERS + GET_TGT(op, src);
-        DBG_PRINT("LDHLr 0x%x\n", op.src);
+        DBG_PRINT("LDHLr %d\n", op.src);
         LDHLr(src);
         return 0;
     } else if(op.src == HL) {
         word *dst = cpu->REGISTERS + GET_TGT(op, dst);
-        DBG_PRINT("LDrHL 0x%x\n", op.dst);
+        DBG_PRINT("LDrHL %d\n", op.dst);
         LDrHL(dst);
         return 0;
     }
@@ -51,7 +52,7 @@ int LD8(struct CPU *cpu, void *RAM, word opcode) {
     word *dst = cpu->REGISTERS + GET_TGT(op, dst);
     word *src = cpu->REGISTERS + GET_TGT(op, src);
 
-    DBG_PRINT("LDrr 0x%x, 0x%x\n", op.dst, op.src);
+    DBG_PRINT("LDrr %d, %d\n", op.dst, op.src);
     LDrr(dst, src);
 
     return 0;

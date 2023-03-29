@@ -1,133 +1,83 @@
-/*
- * WARNING: Current instuction decode sequence is written really poorly.
- *          Needs refactoring. May be done in the future.
- */
-
 #include <stdio.h>
-#include "cpu.h"
+#include "alu.h"
 #include "clock.h"
-#include "general.h"
+
+#define GET_FLAG(FLG) cpu->flags.FLG
 
 #define SET_FLAG(FLG, val)  do cpu->flags.FLG = (val); while(0)
 #define SET_Z_FLG(res)      SET_FLAG(Z, res == 0)
-#define SET_H_FLG(old, res) SET_FLAG(H, (res & 0xF0) != (old & 0xF0))
+
+// FIXME: incorrect!!!!
+#define SET_H_FLG(old, res) SET_FLAG(H, (res & 0xF0) != (old & 0xF0); 1)
 #define SET_C_FLG(res)      SET_FLAG(C, res > 0xFF)
 
 // >-----------------<
-//      ADC 8-bit
+//      ALU 8-bit
 // >-----------------<
 
-#define OP_AUTO_FLAGS(op, action, N_FLG)    \
-    case (op):                              \
-        SET_FLAG(N, N_FLG);                 \
-        res = action;                       \
-        SET_H_FLG(res, old);                \
-        SET_C_FLG(res);                     \
-        break;
+/* Note: HL suffix = memory reference at addr = cpu->HL
+ *       i  suffix = memory reference at cpu->PC
+ *       r  suffix = register value
+ */
 
-#define OP_KNOWN_FLAGS(op, action, N_FLG, H_FLG, C_FLG) \
-    case (op):                                          \
-        SET_FLAG(N, N_FLG);                             \
-        SET_FLAG(H, H_FLG);                             \
-        SET_FLAG(C, C_FLG);                             \
-        res = action;                                   \
-        break;
+// <-----< GENERAL ALU OPERATIONS >----->
 
-void ALU_A_8(struct CPU *cpu, const word* src, char op) {
-    word  old = cpu->A;
-    dword res = old;
+#define ADD(to, from) wait(4); SET_FLAG(N, 0); old = to; res = ((to) += (from));
+#define ADDr(from)    ADD(cpu->A, cpu->from); // May change to ptr in future
+#define ADDHL()       ADD(cpu->A, HL8);
+#define ADDi()        ADD(cpu->A, IMM8);
+#define ADCr(from)    ADD(cpu->A, cpu->from + cpu->flags.C);
+#define ADCHL()       ADD(cpu->A, HL8 + cpu->flags.C);
+#define ADCi()        ADD(cpu->A, IMM8 + cpu->flags.C);
 
-    switch (op) {
-        OP_AUTO_FLAGS ('+', old + (dword)*src,                 0);       // ADD
-        OP_AUTO_FLAGS ('a', old + (dword)*src + (dword)cpu->C, 0);       // ADC
-        OP_AUTO_FLAGS ('-', old - (dword)*src,                 1);       // SUB
-        OP_AUTO_FLAGS ('s', old - (dword)*src - (dword)cpu->C, 1);       // SBC
-        OP_KNOWN_FLAGS('&', old & (dword)*src,                 0, 1, 0); // AND
-        OP_KNOWN_FLAGS('|', old | (dword)*src,                 0, 0, 0); // OR
-        OP_KNOWN_FLAGS('^', old ^ (dword)*src,                 0, 0, 0); // XOR
-        default:
-            fprintf(stderr, "ERROR: Invalid operation sent to ALU: |%c|(%d)\n", op, op);
-            return;
-    }
+#define SUB(from, what) wait(4); SET_FLAG(N, 1); old = from; res = ((from) -= (what));
+#define SUBr(what)      SUB(cpu->A, cpu->what); // May change to ptr in future
+#define SUBHL()         SUB(cpu->A, HL8);
+#define SUBi()          SUB(cpu->A, IMM8);
+#define SBCr(from)      SUB(cpu->A, cpu->from + cpu->flags.C);
+#define SBCHL()         SUB(cpu->A, HL8 + cpu->flags.C);
+#define SBCi()          SUB(cpu->A, IMM8 + cpu->flags.C);
 
-    SET_Z_FLG(res);
-    cpu->A = (word)res;
-}
+#define CP(what) wait(4); SET_FLAG(N, 1); old = cpu->A; res = (cpu->A - cpu->what);
+#define CPHL()   wait(4); SET_FLAG(N, 1); old = cpu->A; res = (cpu->A - HL8);
+#define CPi()    wait(4); SET_FLAG(N, 1); old = cpu->A; res = (cpu->A - IMM8);
 
-void CP_A(struct CPU *cpu, const word* src) {
-    word  old = cpu->A;
-    dword res = (dword)old - (dword)*src;
+#define INC(what)  wait(4); SET_FLAG(N, 0); old = what; res = ((what) + 1);
+#define INCr(what) INC(cpu->what);
+#define INCHL()    INC(HL8);
 
-    SET_Z_FLG(res);
-    SET_FLAG (N, 1);
-    SET_H_FLG(res, old);
-    SET_C_FLG(res);
-}
+#define DEC(what)  wait(4); SET_FLAG(N, 1); old = what; res = ((what) - 1);
+#define DECr(what) DEC(cpu->what);
+#define DECHL()    DEC(HL8);
 
-void INC_DEC_8(struct CPU *cpu, word* src, char op) {
-    word  old = *src;
-    dword res;
+// <-----< BIT OPERATIONS >----->
 
-    switch (op) {
-        // INC
-        case 'i':
-            res = old + 1;
-            SET_FLAG(N, 0);
-            break;
+#define LOGIC(op, with) wait(4); SET_FLAG(N, 0); SET_FLAG(C, 0); old = cpu->A; res = (cpu->A op##= (with));
 
-        // DEC
-        case 'd':
-            res = old - 1;
-            SET_FLAG(N, 1);
-            break;
+#define AND(with)  LOGIC(&, (with));
+#define ANDr(with) AND(cpu->with);
+#define ANDHL()    AND(HL8);
+#define ANDi()     AND(IMM8);
 
-        default:
-            fprintf(stderr, "ERROR: Invalid operation sent to ALU: |%c|(%d)\n", op, op);
-            return;
-    }
+#define OR(with)  LOGIC(|, (with));
+#define ORr(with) OR(cpu->with);
+#define ORHL()    OR(HL8);
+#define ORi()     OR(IMM8);
 
-    *src = (word) res;
+#define XOR(with)  LOGIC(^, (with));
+#define XORr(with) XOR(cpu->with);
+#define XORHL()    XOR(HL8);
+#define XORi()     XOR(IMM8);
 
-    SET_Z_FLG(res);
-    SET_H_FLG(old, res);
-}
+// <-----< MISC >------>
+
+#define CCF() wait(4); SET_FLAG(N, 0); SET_FLAG(H, 0); SET_FLAG(C, !GET_FLAG(C));
+#define SCF() wait(4); SET_FLAG(N, 0); SET_FLAG(H, 0); SET_FLAG(C, 1);
+
+#define DAA() wait(4); SET_FLAG(H, 0); ?? // TODO: implement
 
 // >-----------------<
-//      ADC 16-bit
+//      ALU 16-bit
 // >-----------------<
 
-void ALU_16(struct CPU *cpu, dword *src, char op) {
-    dword old, res;
-    
-    switch (op) {
-        case 'H':
-            old = cpu->HL;
-            res = old + *src;
-            SET_FLAG(N, 0);
-            SET_H_FLG(old, res);
-            SET_C_FLG(res);
-            cpu->HL = res;
-            break;
-
-        case 'S':
-            old = cpu->SP;
-            res = old + (word)*src;
-            SET_FLAG(Z, 0);
-            SET_FLAG(N, 0);
-            SET_H_FLG(old, res);
-            SET_C_FLG(res);
-            cpu->SP = res;
-            break;
-
-        case 'i':
-            *src += 1;
-            break;
-
-        case 'd':
-            *src -= 1;
-            break;
-
-        default:
-            break;
-    }
-}
+// TODO: implement

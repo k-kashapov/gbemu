@@ -1,6 +1,26 @@
 #include "mem.h"
 #include "general.h"
 
+word MEM8 (void *RAM, dword offs) {
+    wait(4); 
+    return ((word *)RAM)[offs];
+}
+
+word *MEMp8(void *RAM, dword offs) {
+    wait(4);
+    return ((word *)RAM) + offs;
+}
+
+dword MEM16 (void *RAM, dword offs) {
+    wait(4);
+    return *(dword *)((word *)RAM + offs);
+}
+
+dword *MEMp16(void *RAM, dword offs) { 
+    wait(4);
+    return (dword *)((word *)RAM + offs);
+}
+
 void dump_mem(void *RAM, size_t len) {
     char *as_char = (char *)RAM;
 

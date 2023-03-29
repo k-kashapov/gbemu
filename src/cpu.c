@@ -3,7 +3,7 @@
 #include "clock.h"
 #include "cpu.h"
 #include "mem.h"
-#include "instructions.h"
+#include "alu.h"
 #include "lsm.h"
 #include "jumps.h"
 
@@ -100,6 +100,24 @@ int execOp(struct CPU *cpu, void *RAM) {
         case 0x3E:
             DBG_PRINT("LD A, imm8\n");
             LDri(A); break;
+        case 0xE0:
+            DBG_PRINT("LD (0xFF00 + n), A\n");
+            LDHnA(); break;
+        case 0xF0:
+            DBG_PRINT("LD A, (0xFF00 + n)\n");
+            LDHAn(); break;
+        case 0xE2:
+            DBG_PRINT("LD (0xFF00 + C), A\n");
+            LDHCA(); break;
+        case 0xF2:
+            DBG_PRINT("LD A, (0xFF00 + C)\n");
+            LDHAC(); break;
+        case 0xEA:
+            DBG_PRINT("LD (imm16), A\n");
+            LDdA(); break;
+        case 0xFA:
+            DBG_PRINT("LD A, (imm16)\n");
+            LDAd(); break;
 
         // Jumps
         case 0xC3:
