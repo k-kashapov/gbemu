@@ -2,8 +2,6 @@
 #include "alu.h"
 #include "clock.h"
 
-#define GET_FLAG(FLG) cpu->flags.FLG
-
 #define SET_FLAG(FLG, val)  do cpu->flags.FLG = (val); while(0)
 #define SET_Z_FLG(res)      SET_FLAG(Z, res == 0)
 #define SET_C_FLG_ADD(res)  SET_FLAG(C, res > 0xFF)

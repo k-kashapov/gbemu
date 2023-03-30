@@ -1,6 +1,6 @@
 CC = gcc
 
-CFLAGS  = -I inc -Wall -Wextra
+CFLAGS  = -I inc
 
 ifeq ($(S), 1)
 	CFLAGS += -s -Os
