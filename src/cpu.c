@@ -17,8 +17,10 @@ enum FLAGS {
 int execOp(struct CPU *cpu, void *RAM) {
     word opcode = ((word *)RAM)[cpu->PC];
 
-    DBG_PRINT("Executing opcode 0x%02X.   B: %02X   C: %02X   D: %02X   E: %02X   H: %02X   L: %02X   A: %02X   F: %02X   PC: %04X   SP: %04X\n",
+    DBG_PRINT("\nExecuting opcode: 0x%02X.   B: %02X   C: %02X   D: %02X   E: %02X   H: %02X   L: %02X   A: %02X   F: %02X   PC: %04X   SP: %04X\n",
                opcode, cpu->B, cpu->C, cpu->D, cpu->E, cpu->H, cpu->L, cpu->A, cpu->flags.as_word, cpu->PC, cpu->SP);
+    DBG_PRINT("                  0x%02X\n", ((word *)RAM)[cpu->PC + 1]);
+    DBG_PRINT("                  0x%02X\n", ((word *)RAM)[cpu->PC + 2]);
     
     int res = 0;
     cpu->PC++;
@@ -36,7 +38,7 @@ int execOp(struct CPU *cpu, void *RAM) {
         case 0x9:
         case 0xA:
         case 0xB:
-            // ALU
+            ALU8(cpu, RAM, opcode);
             goto finish;
 
         default:

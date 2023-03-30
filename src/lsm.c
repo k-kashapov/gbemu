@@ -8,13 +8,6 @@
 #define LDrHL(dst)     LD(*(dst),    HL8);
 #define LDHLr(src)     LD( *HL8p, *(src));
 
-// TODO: Use MACROS instead of bitfields
-struct LD8op {
-    unsigned int src  : 3;
-    unsigned int dst  : 3;
-    unsigned int code : 2;
-};
-
 // Possible bitfield values for dst and src
 enum TARGETS {
     B  = 0x0,
@@ -27,32 +20,36 @@ enum TARGETS {
     A  = 0x7,
 };
 
-// Need to do this due to little endianness
-#define GET_TGT(op, tgt) (op.tgt ^ 1U)
+#define GET_DST(op) (((op) & 0x38) >> 3U)
+#define GET_SRC(op) ((op) & 0x07)
+
+#define GET_REGISTER(tgt) (cpu->REGISTERS + (tgt ^ 1U))
+
+#ifdef DBG
+    static const char *tgtNames = "BCDEHLmA";
+#endif
 
 int LD8(struct CPU *cpu, void *RAM, word opcode) {
-    struct LD8op op = *(struct LD8op *)&opcode;
-
-    if (op.dst == HL) {
-        if (op.src == HL) {
+    if (GET_DST(opcode) == HL) {
+        if (GET_SRC(opcode) == HL) {
             return HALT;
         }
 
-        word *src = cpu->REGISTERS + GET_TGT(op, src);
-        DBG_PRINT("LDHLr %d\n", op.src);
+        word *src = GET_REGISTER(GET_SRC(opcode));
+        DBG_PRINT("LDHLr %c\n", tgtNames[GET_SRC(opcode)]);
         LDHLr(src);
         return 0;
-    } else if(op.src == HL) {
-        word *dst = cpu->REGISTERS + GET_TGT(op, dst);
-        DBG_PRINT("LDrHL %d\n", op.dst);
+    } else if(GET_SRC(opcode) == HL) {
+        word *dst = GET_REGISTER(GET_DST(opcode));
+        DBG_PRINT("LDrHL %c\n", tgtNames[GET_DST(opcode)]);
         LDrHL(dst);
         return 0;
     }
 
-    word *dst = cpu->REGISTERS + GET_TGT(op, dst);
-    word *src = cpu->REGISTERS + GET_TGT(op, src);
+    word *dst = GET_REGISTER(GET_DST(opcode));
+    word *src = GET_REGISTER(GET_SRC(opcode));
 
-    DBG_PRINT("LDrr %d, %d\n", op.dst, op.src);
+    DBG_PRINT("LDrr %c, %c\n", tgtNames[GET_DST(opcode)], tgtNames[GET_DST(opcode)]);
     LDrr(dst, src);
 
     return 0;

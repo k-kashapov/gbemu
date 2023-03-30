@@ -4,7 +4,11 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define DBG_PRINT(...) fprintf(stderr, __VA_ARGS__)
+#ifdef DBG
+    #define DBG_PRINT(...) fprintf(stderr, __VA_ARGS__)
+#else
+    #define DBG_PRINT(...) ;
+#endif
 
 enum ERR_CODES {
     OK            = 0,

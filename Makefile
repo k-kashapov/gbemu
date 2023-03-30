@@ -5,7 +5,7 @@ CFLAGS  = -I inc -Wall -Wextra
 ifeq ($(S), 1)
 	CFLAGS += -s -Os
 else
-	CFLAGS += -g -O0
+	CFLAGS += -g -O0 -DDBG
 endif
 
 include txx.mk
