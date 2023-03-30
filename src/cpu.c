@@ -38,7 +38,7 @@ int execOp(struct CPU *cpu, void *RAM) {
         case 0x9:
         case 0xA:
         case 0xB:
-            ALU8(cpu, RAM, opcode);
+            res = ALU8(cpu, RAM, opcode);
             goto finish;
 
         default:
