@@ -53,7 +53,7 @@ int execOp(struct CPU *cpu, void *RAM) {
             res = STOP;
             break;
 
-        // Other 8bit ALU operations
+        // <-----< Other 8 bit lsm operations >----->
         case 0x02:
             DBG_PRINT("LD (BC), A\n");
             LDmA(BC); break;
@@ -121,10 +121,44 @@ int execOp(struct CPU *cpu, void *RAM) {
             DBG_PRINT("LD A, (imm16)\n");
             LDAd(); break;
 
-        // Jumps
+        // <-----< Jumps >----->
         case 0xC3:
             DBG_PRINT("JUMP 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
             JPi(); break;
+        case 0xE9:
+            DBG_PRINT("JUMP 0x%04X -> 0x%04X\n", cpu->PC, cpu->HL);
+            JPHL(); break;
+
+        // Relative conditional jumps
+        case 0x20:
+            DBG_PRINT("JR NZ 0x%04X += 0x%02X\n", cpu->PC, *((word *)RAM + cpu->PC));
+            JRc(cpu->flags.Z == 0); break;
+        case 0x30:
+            DBG_PRINT("JR NC 0x%04X += 0x%02X\n", cpu->PC, *((word *)RAM + cpu->PC));
+            JRc(cpu->flags.C == 0); break;
+        case 0x28:
+            DBG_PRINT("JR Z 0x%04X += 0x%02X\n", cpu->PC, *((word *)RAM + cpu->PC));
+            JRc(cpu->flags.Z); break;
+        case 0x38:
+            DBG_PRINT("JR C 0x%04X += 0x%02X\n", cpu->PC, *((word *)RAM + cpu->PC));
+            JRc(cpu->flags.C); break;
+        case 0x18:
+            DBG_PRINT("JR 0x%04X += 0x%02X\n", cpu->PC, *((word *)RAM + cpu->PC));
+            JR(); break;
+
+        // Conditional jumps
+        case 0xC2:
+            DBG_PRINT("JP NZ 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
+            JPci(cpu->flags.Z == 0); break;
+        case 0xD2:
+            DBG_PRINT("JP NC 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
+            JPci(cpu->flags.C == 0); break;
+        case 0xCA:
+            DBG_PRINT("JP Z 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
+            JPci(cpu->flags.Z); break;
+        case 0xDA:
+            DBG_PRINT("JP C 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
+            JPci(cpu->flags.C); break;
 
         default:
             wait(4);

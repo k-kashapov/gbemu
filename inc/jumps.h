@@ -11,22 +11,30 @@
 #define JPHL() JP(cpu->HL);
 
 // Conditional jmp
-#define JPci(cond) do wait(4); dword dest = IMM16; if (cond) JP(dest); while(0);
+#define JPci(cond) \
+    do {                    \
+        wait(4);            \
+        dword dest = IMM16; \
+        if (cond) {         \
+            JP(dest);       \
+        }                   \
+    } while(0);
 
 // Relative jmp
 #define JR() \
-    do                                                              \
+    do {                                                            \
         wait(4);                                                    \
         dword new_pc = (dword)((sdword) cpu->PC + (sword) IMM8);    \
         JP(new_pc);                                                 \
-    while (0)
+    } while (0)
 
 #define JRc(cond) \
-    do                                                              \
+    do {                                                             \
         wait(4);                                                    \
         dword new_pc = (dword)((sdword) cpu->PC + (sword) IMM8);    \
-        if (cond)                                                   \
+        if (cond) {                                                 \
             JP(new_pc);                                             \
-    while (0)
+        }                                                           \
+    } while (0)
 
 #endif // JUMPS_H
