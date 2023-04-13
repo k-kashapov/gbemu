@@ -29,12 +29,19 @@
     } while (0)
 
 #define JRc(cond) \
-    do {                                                             \
+    do {                                                            \
         wait(4);                                                    \
         dword new_pc = (dword)((sdword) cpu->PC + (sword) IMM8);    \
         if (cond) {                                                 \
             JP(new_pc);                                             \
         }                                                           \
     } while (0)
+
+#define CALLi()
+    // do {
+    //     wait(4); 
+    //     dword new_pc = IMM16;
+    //     PUSHrr(PC);
+    // } while(0)
 
 #endif // JUMPS_H

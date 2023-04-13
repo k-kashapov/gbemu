@@ -75,4 +75,17 @@ __always_inline dword imm16(void *RAM, struct CPU *cpu) {
 int LD8   (struct CPU *cpu, void *RAM, word opcode);
 int LD8rel(struct CPU *cpu, void *RAM, word opcode);
 
+// >--------------------<
+//      16-bit LOADS
+// >--------------------<
+
+#define PUSH(what)  wait(4); wait(4); cpu->SP -= 2; *MEMp16(RAM, cpu->SP) = what;
+#define PUSHrr(reg) PUSH(cpu->reg);
+
+#define POP(what)  wait(4); what = MEM16(RAM, cpu->SP); wait(4); cpu->SP += 2;
+#define POPrr(reg) POP(cpu->reg);
+#define POPAF()    wait(4); cpu->AF = (MEM16(RAM, cpu->SP) & 0xFFF0); wait(4); cpu->SP += 2;
+
+
+
 #endif // LSM_H

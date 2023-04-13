@@ -28,12 +28,11 @@ int execOp(struct CPU *cpu, void *RAM) {
     cpu->PC++;
 
     word hi = HI_NIBBLE(opcode) >> 4;
+    // word lo = LO_NIBBLE(opcode);
     
-    if (hi >= 0x4 && hi <= 0x7) {
-        return LD8(cpu, RAM, opcode);
-    } else if (hi >= 0x8 && hi <= 0xB) {
-        return ALU8(cpu, RAM, opcode);
-    } else if (hi < 0x4) {
+    // All opcodes split into 4 groups for easier decoding
+
+    if (hi < 0x4) {
         switch (opcode) {
             case 0x00: // NOP
                 wait(4);
@@ -91,6 +90,87 @@ int execOp(struct CPU *cpu, void *RAM) {
             case 0x3E:
                 DBG_PRINT("LD A, imm8\n");
                 LDri(A); break;
+
+            case 0x3F:
+                DBG_PRINT("CCF\n");
+                CCF(); break;
+            case 0x37:
+                DBG_PRINT("SCF\n");
+                SCF(); break;
+            case 0x2F:
+                DBG_PRINT("CPL\n");
+                CPL(); break;
+
+            // <-----< Other 8-bit ALU ops >------>
+            case 0x04:
+            case 0x05:
+            case 0x14:
+            case 0x15:
+            case 0x24:
+            case 0x25:
+            case 0x34:
+            case 0x35:
+            case 0x0C:
+            case 0x0D:
+            case 0x1C:
+            case 0x1D:
+            case 0x2C:
+            case 0x2D:
+            case 0x3C:
+            case 0x3D:
+                INCDEC8(cpu, RAM, opcode);
+                break;
+
+            // Relative conditional jumps
+            case 0x20:
+                DBG_PRINT("JR NZ 0x%04X += 0x%02X\n", cpu->PC, *((word *)RAM + cpu->PC));
+                JRc(cpu->flags.Z == 0); break;
+            case 0x30:
+                DBG_PRINT("JR NC 0x%04X += 0x%02X\n", cpu->PC, *((word *)RAM + cpu->PC));
+                JRc(cpu->flags.C == 0); break;
+            case 0x28:
+                DBG_PRINT("JR Z 0x%04X += 0x%02X\n", cpu->PC, *((word *)RAM + cpu->PC));
+                JRc(cpu->flags.Z); break;
+            case 0x38:
+                DBG_PRINT("JR C 0x%04X += 0x%02X\n", cpu->PC, *((word *)RAM + cpu->PC));
+                JRc(cpu->flags.C); break;
+            case 0x18:
+                DBG_PRINT("JR 0x%04X += 0x%02X\n", cpu->PC, *((word *)RAM + cpu->PC));
+                JR(); break;
+            default:
+                wait(4);
+                fprintf(stderr, "ERROR: Unknown opcode: 0x%02x\n\n", opcode);
+                break;
+        }
+    } else if (hi >= 0x4 && hi <= 0x7) {
+        return LD8(cpu, RAM, opcode);
+    } else if (hi >= 0x8 && hi <= 0xB) {
+        return ALU8(cpu, RAM, opcode);
+    } else {
+        switch (opcode) {
+            // <-----< Jumps >----->
+            case 0xC3:
+                DBG_PRINT("JUMP 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
+                JPi(); break;
+            case 0xE9:
+                DBG_PRINT("JUMP 0x%04X -> 0x%04X\n", cpu->PC, cpu->HL);
+                JPHL(); break;
+
+            // <---< Conditional jumps >---->
+            case 0xC2:
+                DBG_PRINT("JP NZ 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
+                JPci(cpu->flags.Z == 0); break;
+            case 0xD2:
+                DBG_PRINT("JP NC 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
+                JPci(cpu->flags.C == 0); break;
+            case 0xCA:
+                DBG_PRINT("JP Z 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
+                JPci(cpu->flags.Z); break;
+            case 0xDA:
+                DBG_PRINT("JP C 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
+                JPci(cpu->flags.C); break;
+
+            // <-----< 16-bit addr 8-bit loads >---->
             case 0xE0:
                 DBG_PRINT("LD (0xFF00 + n), A\n");
                 LDHnA(); break;
@@ -110,66 +190,32 @@ int execOp(struct CPU *cpu, void *RAM) {
                 DBG_PRINT("LD A, (imm16)\n");
                 LDAd(); break;
 
-            // <-----< Other 8-bit ALU ops >------>
-            case 0x04:
-            case 0x05:
-            case 0x14:
-            case 0x15:
-            case 0x24:
-            case 0x25:
-            case 0x34:
-            case 0x35:
-            case 0x0C:
-            case 0x0D:
-            case 0x1C:
-            case 0x1D:
-            case 0x2C:
-            case 0x2D:
-            case 0x3C:
-            case 0x3D:
-                // TODO: inc dec
-                break;
+            // <----< 16-bit loads >----->
+            case 0xC5:
+                DBG_PRINT("PUSH BC\n");
+                PUSHrr(BC); break;
+            case 0xD5:
+                DBG_PRINT("PUSH DE\n");
+                PUSHrr(DE); break;
+            case 0xE5:
+                DBG_PRINT("PUSH HL\n");
+                PUSHrr(HL); break;
+            case 0xF5:
+                DBG_PRINT("PUSH AF\n");
+                PUSHrr(AF); break;
 
-            // Relative conditional jumps
-            case 0x20:
-                DBG_PRINT("JR NZ 0x%04X += 0x%02X\n", cpu->PC, *((word *)RAM + cpu->PC));
-                JRc(cpu->flags.Z == 0); break;
-            case 0x30:
-                DBG_PRINT("JR NC 0x%04X += 0x%02X\n", cpu->PC, *((word *)RAM + cpu->PC));
-                JRc(cpu->flags.C == 0); break;
-            case 0x28:
-                DBG_PRINT("JR Z 0x%04X += 0x%02X\n", cpu->PC, *((word *)RAM + cpu->PC));
-                JRc(cpu->flags.Z); break;
-            case 0x38:
-                DBG_PRINT("JR C 0x%04X += 0x%02X\n", cpu->PC, *((word *)RAM + cpu->PC));
-                JRc(cpu->flags.C); break;
-            case 0x18:
-                DBG_PRINT("JR 0x%04X += 0x%02X\n", cpu->PC, *((word *)RAM + cpu->PC));
-                JR(); break;
-        }
-    } else {
-        switch (opcode) {
-            // <-----< Jumps >----->
-            case 0xC3:
-                DBG_PRINT("JUMP 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
-                JPi(); break;
-            case 0xE9:
-                DBG_PRINT("JUMP 0x%04X -> 0x%04X\n", cpu->PC, cpu->HL);
-                JPHL(); break;
-
-            // Conditional jumps
-            case 0xC2:
-                DBG_PRINT("JP NZ 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
-                JPci(cpu->flags.Z == 0); break;
-            case 0xD2:
-                DBG_PRINT("JP NC 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
-                JPci(cpu->flags.C == 0); break;
-            case 0xCA:
-                DBG_PRINT("JP Z 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
-                JPci(cpu->flags.Z); break;
-            case 0xDA:
-                DBG_PRINT("JP C 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
-                JPci(cpu->flags.C); break;
+            case 0xC1:
+                DBG_PRINT("POP BC\n");
+                POPrr(BC); break;
+            case 0xD1:
+                DBG_PRINT("POP DE\n");
+                POPrr(DE); break;
+            case 0xE1:
+                DBG_PRINT("POP HL\n");
+                POPrr(HL); break;
+            case 0xF1:
+                DBG_PRINT("POP AF\n");
+                POPAF(); break;
 
             default:
                 wait(4);

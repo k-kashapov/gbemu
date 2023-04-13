@@ -42,11 +42,11 @@
 
 #define INC(what)       wait(4); SET_FLAG(N, 0); op1 = what; op2 = 1; res = ((what) += 1);
 #define INCr(what)      INC(*what);
-#define INCHL()         INC(HL8);
+#define INCHL()         INC(*HL8p);
 
 #define DEC(what)       wait(4); SET_FLAG(N, 1); op1 = what; op2 = 1; res = ((what) -= 1);
 #define DECr(what)      DEC(*what);
-#define DECHL()         DEC(HL8);
+#define DECHL()         DEC(*HL8p);
 
 // <-----< BIT OPERATIONS >----->
 
@@ -69,11 +69,7 @@
 
 // <-----< MISC >------>
 
-#define CCF() wait(4); SET_FLAG(N, 0); SET_FLAG(H, 0); SET_FLAG(C, !GET_FLAG(C));
-#define SCF() wait(4); SET_FLAG(N, 0); SET_FLAG(H, 0); SET_FLAG(C, 1);
-
 #define DAA() wait(4); SET_FLAG(H, 0); ?? // TODO: implement
-#define CPL() wait(4); SET_FLAG(N, 1); SET_FLAG(H, 1); cpu->A = ~cpu->A;
 
 // <=====< Functions >=====>
 
@@ -166,6 +162,48 @@ int ALU8(struct CPU *cpu, void *RAM, word opcode) {
     }
 
     DBG_PRINT("res = %x, op1 = %x, op2 = %x\n", res, op1, op2);
+    SET_Z_FLG(res);
+
+    return 0;
+}
+#undef GET_SRC
+#undef GET_TYPE
+#undef GET_ISIMM
+
+
+// Bit fields of INC and DEC opcodes
+#define GET_TYPE(op) (op & 0x7)
+#define GET_TGT(op)  (((op) & 0x38) >> 3U)
+
+#define TYPE_INC 0x4
+#define TYPE_DEC 0x5
+
+int INCDEC8(struct CPU *cpu, void *RAM, word opcode) {
+    word tgt = GET_TGT(opcode);
+    dword res = 0;
+    word op1 = 0, op2 = 0;
+
+    if (GET_TYPE(opcode) == TYPE_INC) {
+        DBG_PRINT("INC %c", tgtNames[tgt]);
+        if (tgt == HL) {
+            INCHL();
+        } else {
+            INCr(GET_REGISTER(tgt));
+        }
+
+        SET_FLAG(H, (((op1 & 0xF) + (op2 & 0xF)) & 0x10) == 0x10);
+
+    } else {
+        DBG_PRINT("DEC %c", tgtNames[tgt]);
+        if (tgt == HL) {
+            DECHL();
+        } else {
+            DECr(GET_REGISTER(tgt));
+        }
+
+        SET_FLAG(H, ((op1 & 0xF) < (op2 & 0xF)));
+    }
+
     SET_Z_FLG(res);
 
     return 0;

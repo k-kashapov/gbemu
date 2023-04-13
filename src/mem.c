@@ -13,12 +13,12 @@ word *MEMp8(void *RAM, dword offs) {
 
 dword MEM16 (void *RAM, dword offs) {
     wait(8);
-    return *(dword *)((word *)RAM + offs);
+    return *(dword *)(uintptr_t)((word *)RAM + offs);
 }
 
 dword *MEMp16(void *RAM, dword offs) { 
     wait(8);
-    return (dword *)((word *)RAM + offs);
+    return (dword *)(uintptr_t)((word *)RAM + offs);
 }
 
 void dump_mem(void *RAM, size_t len) {
