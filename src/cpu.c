@@ -150,7 +150,7 @@ int execOp(struct CPU *cpu, void *RAM) {
         switch (opcode) {
             // <-----< Jumps >----->
             case 0xC3:
-                DBG_PRINT("JUMP 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
+                DBG_PRINT("JUMP 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)(uintptr_t)((word *)RAM + cpu->PC));
                 JPi(); break;
             case 0xE9:
                 DBG_PRINT("JUMP 0x%04X -> 0x%04X\n", cpu->PC, cpu->HL);
@@ -158,16 +158,16 @@ int execOp(struct CPU *cpu, void *RAM) {
 
             // <---< Conditional jumps >---->
             case 0xC2:
-                DBG_PRINT("JP NZ 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
+                DBG_PRINT("JP NZ 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)(uintptr_t)((word *)RAM + cpu->PC));
                 JPci(cpu->flags.Z == 0); break;
             case 0xD2:
-                DBG_PRINT("JP NC 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
+                DBG_PRINT("JP NC 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)(uintptr_t)((word *)RAM + cpu->PC));
                 JPci(cpu->flags.C == 0); break;
             case 0xCA:
-                DBG_PRINT("JP Z 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
+                DBG_PRINT("JP Z 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)(uintptr_t)((word *)RAM + cpu->PC));
                 JPci(cpu->flags.Z); break;
             case 0xDA:
-                DBG_PRINT("JP C 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)((word *)RAM + cpu->PC));
+                DBG_PRINT("JP C 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)(uintptr_t)((word *)RAM + cpu->PC));
                 JPci(cpu->flags.C); break;
 
             // <-----< 16-bit addr 8-bit loads >---->
@@ -216,6 +216,10 @@ int execOp(struct CPU *cpu, void *RAM) {
             case 0xF1:
                 DBG_PRINT("POP AF\n");
                 POPAF(); break;
+
+            case 0xF9:
+                DBG_PRINT("LD SP, HL\n");
+                LDSPHL(); break;
 
             default:
                 wait(4);

@@ -86,6 +86,11 @@ int LD8rel(struct CPU *cpu, void *RAM, word opcode);
 #define POPrr(reg) POP(cpu->reg);
 #define POPAF()    wait(4); cpu->AF = (MEM16(RAM, cpu->SP) & 0xFFF0); wait(4); cpu->SP += 2;
 
+#define LD16(to, from) wait(4); (to) = (dword)(from);
+#define LDSPHL()       wait(4); LD16(cpu->SP, cpu->HL);
+#define LD16ri(reg)    wait(4); cpu->reg = IMM16;
 
+// LD (nn), SP
+#define LDiSP() LD16(*MEMp16(RAM, IMM16), cpu->SP);
 
 #endif // LSM_H

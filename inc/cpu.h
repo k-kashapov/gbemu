@@ -23,21 +23,28 @@ struct CPU {
             DWORDREG(B, C);
             DWORDREG(D, E);
             DWORDREG(H, L);
-            struct {
-                word A;
-                union {
-                    struct {
-                        // TODO: replace with bit operations as compiler can
-                        //       change the order of bitfields in a struct
-                        word RSV : 4;
-                        word C   : 1;
-                        word H   : 1;
-                        word N   : 1;
-                        word Z   : 1;
-                    };
-                    word as_word;
-                } flags;
-            } AF;
+
+            // This monstrous structure allows us to access
+            // registers A and F in various ways. (double word, 2 words, single bit)
+            union {
+                struct {
+                    word A;
+                    union {
+                        struct {
+                            // TODO: replace with bit operations as compiler can
+                            //       change the order of bitfields in a struct
+                            word RSV : 4;
+                            word C   : 1;
+                            word H   : 1;
+                            word N   : 1;
+                            word Z   : 1;
+                        };
+                        word as_word;
+                    } flags;
+                };
+
+                dword AF;
+            };
         };
     } __attribute__ ((packed));
     

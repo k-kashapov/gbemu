@@ -1,6 +1,6 @@
 CC = gcc
 
-CFLAGS  = -I inc
+CFLAGS  = -I inc -DCPU_FREQ=4194304 -DTIME_SCALE=250000
 
 ifeq ($(S), 1)
 	CFLAGS += -s -Os

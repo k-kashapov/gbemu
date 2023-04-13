@@ -4,8 +4,6 @@
 #include "cpu.h"
 #include "general.h"
 
-#define CPU_FREQ 4194304 // Hz
-
 enum STATES {
     INVAL = 0,
     RDY   = 1,
