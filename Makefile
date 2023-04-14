@@ -1,11 +1,18 @@
 CC = gcc
 
-CFLAGS  = -I inc -DCPU_FREQ=4194304 -DTIME_SCALE=250000
+# One cycle time scale
+TOKI_WO_TOMORE = 250000
+
+CFLAGS  = -I inc -DCPU_FREQ=4194304 -DTIME_SCALE=$(TOKI_WO_TOMORE) -fsanitize=address
 
 ifeq ($(S), 1)
 	CFLAGS += -s -Os
 else
 	CFLAGS += -g -O0 -DDBG
+endif
+
+ifeq ($(SINGLE_STEP), 1)
+	CFLAGS += -DSINGLE_STEP
 endif
 
 include txx.mk

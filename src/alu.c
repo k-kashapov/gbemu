@@ -184,7 +184,7 @@ int INCDEC8(struct CPU *cpu, void *RAM, word opcode) {
     word op1 = 0, op2 = 0;
 
     if (GET_TYPE(opcode) == TYPE_INC) {
-        DBG_PRINT("INC %c", tgtNames[tgt]);
+        DBG_PRINT("INC %c\n", tgtNames[tgt]);
         if (tgt == HL) {
             INCHL();
         } else {
@@ -194,7 +194,7 @@ int INCDEC8(struct CPU *cpu, void *RAM, word opcode) {
         SET_FLAG(H, (((op1 & 0xF) + (op2 & 0xF)) & 0x10) == 0x10);
 
     } else {
-        DBG_PRINT("DEC %c", tgtNames[tgt]);
+        DBG_PRINT("DEC %c\n", tgtNames[tgt]);
         if (tgt == HL) {
             DECHL();
         } else {

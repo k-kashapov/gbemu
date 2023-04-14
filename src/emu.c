@@ -2,6 +2,11 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+
+#ifdef DBG
+#include <signal.h>
+#endif
+
 #include "emu.h"
 #include "file.h"
 #include "general.h"
@@ -10,8 +15,29 @@
 
 #define RAM_POISON 0xC0DE
 
+static int ForcedFinish = 0;
+
+#ifdef DBG
+static void sigint_hdlr(int param) {
+    (void) param;
+    
+    while (1) {
+        fprintf(stderr, "\r-> ");
+        int inpt = getchar();
+        if (inpt == '\n') continue;
+        switch (inpt) {
+            case 'q':
+                ForcedFinish = 1;
+                return;
+            default:
+                fprintf(stderr, "\rUnknown command: %c\n", inpt);
+        }
+    }
+}
+#endif
+
 int initEmu(struct Emu *tgt) {
-    word *mem = (word *)calloc(MEM_SIZE, 1);
+    word *mem = (word *)malloc(MEM_SIZE);
     if (!mem) {
         perror("ERROR: could not allocate memory");
         return MEM_ALLOC_ERR;
@@ -21,6 +47,17 @@ int initEmu(struct Emu *tgt) {
     tgt->cpu   = new_cpu;
     tgt->RAM   = mem;
     tgt->state = RDY;
+
+#ifdef DBG
+    struct sigaction act = {0};
+    act.sa_handler  = sigint_hdlr;
+
+    int res = sigaction(SIGINT, &act, NULL);
+    if (res < 0) {
+        perror("sigaction");
+        return res;
+    }
+#endif
 
     return OK;
 }
@@ -63,18 +100,26 @@ int getFile(struct Emu *emu, const char name[static 1]) {
 
 int runEmu(struct Emu *emu) {
     // DEBUG!!!
-    emu->cpu.PC = 0x100;
-    emu->cpu.A  = 0xAD;
-    emu->cpu.B  = 0xC0;
-    emu->cpu.C  = 0x70;
-    emu->cpu.D  = 0xAB;
-    emu->cpu.SP = 0xFFFE;
+    emu->cpu.PC  = 0x100;
+    emu->cpu.A   = 0xAD;
+    emu->cpu.B   = 0xC0;
+    emu->cpu.C   = 0x70;
+    emu->cpu.D   = 0xAB;
+    emu->cpu.SP  = 0xFFFE;
+    emu->cpu.IME = 1;
 
     int res = 0;
 
-    while (!res) {
+#ifdef SINGLE_STEP
+    DBG_PRINT("Press ENTER to single step\n");
+#endif
+
+    while (!res && !ForcedFinish) {
         res = execOp(&emu->cpu, emu->RAM);
+        // TODO: implement HALT and STOP
     }
+
+    DBG_PRINT("Quitting...");
 
     return OK;
 }

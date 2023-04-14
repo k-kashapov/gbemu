@@ -79,12 +79,12 @@ int LD8rel(struct CPU *cpu, void *RAM, word opcode);
 //      16-bit LOADS
 // >--------------------<
 
-#define PUSH(what)  wait(4); wait(4); cpu->SP -= 2; *MEMp16(RAM, cpu->SP) = what;
-#define PUSHrr(reg) PUSH(cpu->reg);
+#define PUSH(what)  wait(4); cpu->SP -= 2; *MEMp16(RAM, cpu->SP) = what;
+#define PUSHrr(reg) wait(4); PUSH(cpu->reg);
 
-#define POP(what)  wait(4); what = MEM16(RAM, cpu->SP); wait(4); cpu->SP += 2;
+#define POP(what)  wait(4); what = MEM16(RAM, cpu->SP); cpu->SP += 2;
 #define POPrr(reg) POP(cpu->reg);
-#define POPAF()    wait(4); cpu->AF = (MEM16(RAM, cpu->SP) & 0xFFF0); wait(4); cpu->SP += 2;
+#define POPAF()    wait(4); cpu->AF = (MEM16(RAM, cpu->SP) & 0xFFF0); cpu->SP += 2;
 
 #define LD16(to, from) wait(4); (to) = (dword)(from);
 #define LDSPHL()       wait(4); LD16(cpu->SP, cpu->HL);
@@ -92,5 +92,15 @@ int LD8rel(struct CPU *cpu, void *RAM, word opcode);
 
 // LD (nn), SP
 #define LDiSP() LD16(*MEMp16(RAM, IMM16), cpu->SP);
+
+#define LDHLSP()                                                        \
+    do {                                                                \
+        wait(4);                                                        \
+        sword e = (sword)IMM8;                                          \
+        dword addr = (dword)((sdword)cpu->SP + (sdword)e);              \
+        cpu->HL = MEM16(RAM, addr);                                     \
+        SET_FLAG(H, ((((addr & 0x0F) + (e & 0x0F)) & 0x10) == 0x10));   \
+        SET_FLAG(C, (((addr & 0xFF) + e) > 0xFF));                      \
+    } while(0)
 
 #endif // LSM_H

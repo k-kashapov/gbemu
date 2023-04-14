@@ -1,7 +1,6 @@
 #include "clock.h"
 
 #include <time.h>
-int nanosleep(const struct timespec *req, struct timespec *rem);
 
 #define CYCLE_TIME_NANO ((1000000000 / CPU_FREQ) * TIME_SCALE)
 

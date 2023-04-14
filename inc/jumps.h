@@ -37,11 +37,35 @@
         }                                                           \
     } while (0)
 
-#define CALLi()
-    // do {
-    //     wait(4); 
-    //     dword new_pc = IMM16;
-    //     PUSHrr(PC);
-    // } while(0)
+#define CALLi()                 \
+    do {                        \
+        wait(4);                \
+        dword new_pc = IMM16;   \
+        PUSH(cpu->PC);          \
+        cpu->PC = new_pc;       \
+    } while(0)
+
+#define CALLci(cond)            \
+    do {                        \
+        wait(4);                \
+        dword new_pc = IMM16;   \
+        if (cond) {             \
+            PUSH(cpu->PC);      \
+            cpu->PC = new_pc;   \
+        }                       \
+    } while(0)
+
+#define RET() POPrr(PC); wait(4);
+
+#define RETc(cond)  \
+    if (cond) {     \
+        POPrr(PC);  \
+    } else {        \
+        wait(4);    \
+    }               \
+    wait(4);
+
+// Note: 'i' does not refer to immediate memory access
+#define RETI() RET(); cpu->IME = 1;
 
 #endif // JUMPS_H

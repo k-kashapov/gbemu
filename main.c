@@ -15,10 +15,15 @@ int main(int argc, const char **argv) {
         return EXIT_SUCCESS;
     } else {
         struct Emu emu = {0};
-        initEmu(&emu);
+        int err;
 
-        int err = getFile(&emu, argv[1]);
+        err = initEmu(&emu);
+        if (err) {
+            freeEmu(&emu);
+            return EXIT_FAILURE;
+        }
 
+        err = getFile(&emu, argv[1]);
         if (err) {
             freeEmu(&emu);
             return EXIT_FAILURE;
