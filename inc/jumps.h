@@ -68,4 +68,15 @@
 // Note: 'i' does not refer to immediate memory access
 #define RETI() RET(); cpu->IME = 1;
 
+#define GET_RST_ADDR(op) (dword)((((op) >> 3) & 0x7) << 3)
+#define RST(op)                             \
+    do {                                    \
+        wait(4);                            \
+        dword new_pc = GET_RST_ADDR(op);    \
+        wait(4);                            \
+        cpu->SP -= 2;                       \
+        *MEMp16(RAM, cpu->SP) = cpu->PC;    \
+        cpu->PC = new_pc;                   \
+    } while(0)
+
 #endif // JUMPS_H

@@ -15,12 +15,15 @@
 
 #define RAM_POISON 0xC0DE
 
-static int ForcedFinish = 0;
-
 #ifdef DBG
+static int ForcedFinish = 0;
+static unsigned Breakpoint = 0;
+
 static void sigint_hdlr(int param) {
     (void) param;
     
+    fprintf(stderr, "\rWelcome to debug interface\n");
+
     while (1) {
         fprintf(stderr, "\r-> ");
         int inpt = getchar();
@@ -29,6 +32,25 @@ static void sigint_hdlr(int param) {
             case 'q':
                 ForcedFinish = 1;
                 return;
+            case 'c':
+                return;
+            case 'b':
+                {
+                    char str[16];
+                    int res = scanf("%s", str);
+                    if (res < 1) {
+                        fprintf(stderr, "\rInvalid breakpoint option\n");
+                    } else {
+                        unsigned PC = 0;
+                        res = sscanf(str, " %x ", &PC);
+                        if (res < 1) {
+                            fprintf(stderr, "\rInvalid breakpoint option\n");
+                        } else {
+                            fprintf(stderr, "Setting breakpoint at 0x%x\n", PC);
+                            Breakpoint = PC;
+                        }
+                    }
+                } continue;
             default:
                 fprintf(stderr, "\rUnknown command: %c\n", inpt);
         }
@@ -114,12 +136,21 @@ int runEmu(struct Emu *emu) {
     DBG_PRINT("Press ENTER to single step\n");
 #endif
 
-    while (!res && !ForcedFinish) {
+    while (!res) {
+#ifdef DBG
+        if (Breakpoint == emu->cpu.PC) {
+            DBG_PRINT("\nBREAKPOINT at 0x%x:", Breakpoint);
+            dumpState(&emu->cpu, emu->RAM, ((word *)emu->RAM)[emu->cpu.PC]);
+            sigint_hdlr(0);
+        }
+
+        if (ForcedFinish) break;
+#endif
         res = execOp(&emu->cpu, emu->RAM);
         // TODO: implement HALT and STOP
     }
 
-    DBG_PRINT("Quitting...");
+    DBG_PRINT("Quitting...\n");
 
     return OK;
 }

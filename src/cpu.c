@@ -14,19 +14,23 @@ enum FLAGS {
     BIT_Z = 1U << 7U, // Zero flag      - last res = 0 
 };
 
-// TODO: REFACTOR
+#ifdef DBG
+void dumpState(struct CPU *cpu, void *RAM, word opcode) {
+    DBG_PRINT("\nExecuting opcode: 0x%02X.   B: %02X   C: %02X   D: %02X   E: %02X   H: %02X   L: %02X   A: %02X   F: %02X   PC: %04X   SP: %04X\n",
+               opcode, cpu->B, cpu->C, cpu->D, cpu->E, cpu->H, cpu->L, cpu->A, cpu->flags.as_word, cpu->PC, cpu->SP);
+    DBG_PRINT("                  0x%02X\n", ((word *)RAM)[cpu->PC + 1]);
+    DBG_PRINT("                  0x%02X\n", ((word *)RAM)[cpu->PC + 2]);
+}
+#endif
 
 int execOp(struct CPU *cpu, void *RAM) {
 #ifdef SINGLE_STEP
     getchar();
 #endif
-
+    
     word opcode = ((word *)RAM)[cpu->PC];
-
-    DBG_PRINT("\nExecuting opcode: 0x%02X.   B: %02X   C: %02X   D: %02X   E: %02X   H: %02X   L: %02X   A: %02X   F: %02X   PC: %04X   SP: %04X\n",
-               opcode, cpu->B, cpu->C, cpu->D, cpu->E, cpu->H, cpu->L, cpu->A, cpu->flags.as_word, cpu->PC, cpu->SP);
-    DBG_PRINT("                  0x%02X\n", ((word *)RAM)[cpu->PC + 1]);
-    DBG_PRINT("                  0x%02X\n", ((word *)RAM)[cpu->PC + 2]);
+    
+    dumpState(cpu, RAM, opcode);
     
     int res = 0;
     cpu->PC++;
@@ -107,7 +111,7 @@ int execOp(struct CPU *cpu, void *RAM) {
             case 0x1C: case 0x1D:
             case 0x2C: case 0x2D:
             case 0x3C: case 0x3D:
-                INCDEC8(cpu, RAM, opcode);
+                res = INCDEC8(cpu, RAM, opcode);
                 break;
 
             case 0x3F:
@@ -156,7 +160,7 @@ int execOp(struct CPU *cpu, void *RAM) {
 
             default:
                 wait(4);
-                fprintf(stderr, "ERROR: Unknown opcode: 0x%02x\n\n", opcode);
+                fprintf(stderr, "ERROR: Unknown opcode: 0x%02X\n\n", opcode);
                 break;
         }
     } else if (hi >= 0x4 && hi <= 0x7) {
@@ -165,6 +169,14 @@ int execOp(struct CPU *cpu, void *RAM) {
         return ALU8(cpu, RAM, opcode);
     } else {
         switch (opcode) {
+            // <---< Immediate ALU8 operations >---->
+            case 0xC6: case 0xCE:
+            case 0xD6: case 0xDE:
+            case 0xE6: case 0xEE:
+            case 0xF6: case 0xFE:
+                res = ALU8(cpu, RAM, opcode);
+                break;
+
             // <-----< Jumps and calls >----->
             case 0xC3:
                 DBG_PRINT("JUMP 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)(uintptr_t)((word *)RAM + cpu->PC));
@@ -218,6 +230,10 @@ int execOp(struct CPU *cpu, void *RAM) {
             case 0xD8:
                 DBG_PRINT("RET C: 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)(uintptr_t)((word *)RAM + cpu->SP));
                 RETc(cpu->flags.C); break;
+
+            case 0xD9:
+                DBG_PRINT("RETI\n");
+                RETI(); break;
 
             // <-----< 16-bit addr 8-bit loads >---->
             case 0xE0:
@@ -273,6 +289,14 @@ int execOp(struct CPU *cpu, void *RAM) {
                 DBG_PRINT("LD SP, HL\n");
                 LDSPHL(); break;
 
+            // <----< RESETS >---->
+            case 0xC7: case 0xCF:
+            case 0xD7: case 0xDF:
+            case 0xE7: case 0xEF:
+            case 0xF7: case 0xFF:
+                DBG_PRINT("RST %02dd\n", GET_RST_ADDR(opcode));
+                RST(opcode); break;
+
             // <----< MISC >----->
             case 0xF3:
                 DBG_PRINT("DISABLE INTERRUPTS\n");
@@ -283,7 +307,7 @@ int execOp(struct CPU *cpu, void *RAM) {
 
             default:
                 wait(4);
-                fprintf(stderr, "ERROR: Unknown opcode: 0x%02x\n\n", opcode);
+                fprintf(stderr, "ERROR: Unknown opcode: 0x%02X\n\n", opcode);
                 break;
         }
     }

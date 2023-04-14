@@ -110,7 +110,7 @@ enum TYPES {
     case op:                                        \
         DBG_PRINT (                                 \
             "%s" #op " %c\n",                       \
-            GET_ISIMM(opcode) == ISIMM ?"IMM8":"",  \
+            GET_ISIMM(opcode) == ISIMM ?"IMM8 ":"", \
             tgtNames[GET_SRC(opcode)]               \
         );                                          \
         if (GET_SRC(opcode) == HL) {                \
