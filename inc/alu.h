@@ -59,4 +59,46 @@ int INCDEC8(struct CPU *cpu, void *RAM, word opcode);
         cpu->flags.H = 0;                                   \
     } while(0)
 
+#define RLA()                               \
+    do {                                    \
+        wait(4);                            \
+        dword tmp = (dword)(cpu->A << 1);   \
+        cpu->A = (word)(tmp | cpu->flags.C);\
+        cpu->flags.C = (word)tmp & 0x100;   \
+        cpu->flags.Z = 0;                   \
+        cpu->flags.N = 0;                   \
+        cpu->flags.H = 0;                   \
+    } while(0)
+
+#define RLCA()                                      \
+    do {                                            \
+        wait(4);                                    \
+        cpu->flags.C = cpu->A >> 7;                 \
+        cpu->A = (word)(cpu->A << 1) | cpu->flags.C;\
+        cpu->flags.Z = 0;                           \
+        cpu->flags.N = 0;                           \
+        cpu->flags.H = 0;                           \
+    } while(0)
+
+// #define RRA()                               \
+//     do {                                    \
+//         wait(4);                            \
+//         dword tmp = (dword)(cpu->A << 1);   \
+//         cpu->A = (word)(tmp | cpu->flags.C);\
+//         cpu->flags.C = (word)tmp & 0x100;   \
+//         cpu->flags.Z = 0;                   \
+//         cpu->flags.N = 0;                   \
+//         cpu->flags.H = 0;                   \
+//     } while(0)
+
+// #define RRCA()                                      \
+//     do {                                            \
+//         wait(4);                                    \
+//         cpu->flags.C = cpu->A >> 7;                 \
+//         cpu->A = (word)(cpu->A << 1) | cpu->flags.C;\
+//         cpu->flags.Z = 0;                           \
+//         cpu->flags.N = 0;                           \
+//         cpu->flags.H = 0;                           \
+//     } while(0)
+
 #endif // ALU_H

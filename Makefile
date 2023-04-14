@@ -3,7 +3,7 @@ CC = gcc
 # One cycle time scale
 TOKI_WO_TOMORE = 250000
 
-CFLAGS = -I inc -DCPU_FREQ=4194304 -DTIME_SCALE=$(TOKI_WO_TOMORE) -fsanitize=address
+CFLAGS = -I inc -DCPU_FREQ=4194304 -DTIME_SCALE=$(TOKI_WO_TOMORE)
 
 ifeq ($(S), 1)
 	CFLAGS += -s -Os

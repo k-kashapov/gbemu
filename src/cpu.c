@@ -129,6 +129,13 @@ int execOp(struct CPU *cpu, void *RAM) {
                 DBG_PRINT("DAA\n");
                 DAA(); break;
 
+            case 0x07:
+                DBG_PRINT("RLCA\n");
+                RLCA(); break;
+            case 0x17:
+                DBG_PRINT("RLA\n");
+                RLA(); break;
+
             // <---< Relative conditional jumps >---->
             case 0x20:
                 DBG_PRINT("JR NZ 0x%04X += 0x%02X\n", cpu->PC, *((word *)RAM + cpu->PC));
