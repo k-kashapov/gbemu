@@ -29,9 +29,11 @@ int execOp(struct CPU *cpu, void *RAM) {
 #endif
     
     word opcode = ((word *)RAM)[cpu->PC];
-    
+
+#ifdef DBG
     dumpState(cpu, RAM, opcode);
-    
+#endif
+
     int res = 0;
     cpu->PC++;
 
@@ -158,6 +160,46 @@ int execOp(struct CPU *cpu, void *RAM) {
                 DBG_PRINT("LD (imm16), SP");
                 LDiSP(); break;
 
+            // <-----< 16-bit ALU >----->
+            case 0x03:
+                DBG_PRINT("INC BC\n");
+                INC16(BC); break;
+            case 0x13:
+                DBG_PRINT("INC DE\n");
+                INC16(DE); break;
+            case 0x23:
+                DBG_PRINT("INC HL\n");
+                INC16(HL); break;
+            case 0x33:
+                DBG_PRINT("INC SP\n");
+                INC16(SP); break;
+            
+            case 0x0B:
+                DBG_PRINT("DEC BC\n");
+                DEC16(BC); break;
+            case 0x1B:
+                DBG_PRINT("DEC DE\n");
+                DEC16(DE); break;
+            case 0x2B:
+                DBG_PRINT("DEC HL\n");
+                DEC16(HL); break;
+            case 0x3B:
+                DBG_PRINT("DEC SP\n");
+                DEC16(SP); break;
+
+            case 0x09:
+                DBG_PRINT("ADD HL, BC\n");
+                ADDHL16(BC); break;
+            case 0x19:
+                DBG_PRINT("ADD HL, DE\n");
+                ADDHL16(DE); break;
+            case 0x29:
+                DBG_PRINT("ADD HL, HL\n");
+                ADDHL16(HL); break;
+            case 0x39:
+                DBG_PRINT("ADD HL, SP\n");
+                ADDHL16(SP); break;
+
             default:
                 wait(4);
                 fprintf(stderr, "ERROR: Unknown opcode: 0x%02X\n\n", opcode);
@@ -169,6 +211,11 @@ int execOp(struct CPU *cpu, void *RAM) {
         return ALU8(cpu, RAM, opcode);
     } else {
         switch (opcode) {
+            case 0xCB:
+                DBG_PRINT("PREFIX CB NOT IMPLEMENTED\n");
+                // prefix_cb();
+                break;
+
             // <---< Immediate ALU8 operations >---->
             case 0xC6: case 0xCE:
             case 0xD6: case 0xDE:
@@ -304,6 +351,11 @@ int execOp(struct CPU *cpu, void *RAM) {
             case 0xFB:
                 DBG_PRINT("ENABLE INTERRUPTS\n");
                 cpu->IME = 1; break;
+
+            // <---< 16-bit ALU >--->
+            case 0xE8:
+                DBG_PRINT("ADD SP, imm8\n");
+                ADDSPi(); break;
 
             default:
                 wait(4);

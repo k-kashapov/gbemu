@@ -170,7 +170,6 @@ int ALU8(struct CPU *cpu, void *RAM, word opcode) {
 #undef GET_TYPE
 #undef GET_ISIMM
 
-
 // Bit fields of INC and DEC opcodes
 #define GET_TYPE(op) (op & 0x7)
 #define GET_TGT(op)  (((op) & 0x38) >> 3U)
@@ -209,8 +208,5 @@ int INCDEC8(struct CPU *cpu, void *RAM, word opcode) {
     return 0;
 }
 
-// >-----------------<
-//      ALU 16-bit
-// >-----------------<
-
-// TODO: implement
+#undef GET_TYPE
+#undef GET_TGT

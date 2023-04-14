@@ -91,6 +91,7 @@ int getFile(struct Emu *emu, const char name[static 1]) {
         return FILE_OPEN_ERR;
     }
 
+#ifdef CHECK_HEADER
     DBG_PRINT("game name = %.16s\n", emu->RAM + GAME_NAME);
     DBG_PRINT("region    = %s\n",    emu->RAM[REGION] ? "WEST" : "JP");
 
@@ -116,6 +117,7 @@ int getFile(struct Emu *emu, const char name[static 1]) {
         fprintf(stderr, "ERROR: N logo invalid!");
         return UNSUPPORTED;
     }
+#endif
 
     return OK;
 }
