@@ -40,4 +40,23 @@ int INCDEC8(struct CPU *cpu, void *RAM, word opcode);
         cpu->HL += cpu->src;                                        \
     } while(0)
 
+// Decimal adjust acumulator
+#define DAA()                                               \
+    do {                                                    \
+        if (!cpu->flags.N) {                                \
+            if (cpu->flags.C || cpu->A > 0x99) {            \
+                cpu->A += 0x60;                             \
+                cpu->flags.C = 1;                           \
+            }                                               \
+            if (cpu->flags.H || (cpu->A & 0x0F) > 0x09) {   \
+                cpu->A += 0x06;                             \
+            }                                               \
+        } else {                                            \
+            if (cpu->flags.C) cpu->A -= 0x60;               \
+            if (cpu->flags.H) cpu->A -= 0x06;               \
+        }                                                   \
+        cpu->flags.Z = !!(cpu->A);                          \
+        cpu->flags.H = 0;                                   \
+    } while(0)
+
 #endif // ALU_H

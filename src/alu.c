@@ -67,10 +67,6 @@
 #define XORHL()     XOR(HL8);
 #define XORi()      XOR(IMM8);
 
-// <-----< MISC >------>
-
-#define DAA() wait(4); SET_FLAG(H, 0); ?? // TODO: implement
-
 // <=====< Functions >=====>
 
 // Bit fields of alu 8 opcode

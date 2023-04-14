@@ -16,13 +16,13 @@
 #define RAM_POISON 0xC0DE
 
 #ifdef DBG
-static int ForcedFinish = 0;
-static unsigned Breakpoint = 0;
+static int      ForcedFinish = 0;
+static unsigned Breakpoint   = 0x100;
 
 static void sigint_hdlr(int param) {
     (void) param;
     
-    fprintf(stderr, "\rWelcome to debug interface\n");
+    fprintf(stderr, "\rWelcome to debug interface.\n");
 
     while (1) {
         fprintf(stderr, "\r-> ");
@@ -51,6 +51,15 @@ static void sigint_hdlr(int param) {
                         }
                     }
                 } continue;
+            case 'h':
+                fprintf(stderr, 
+                    "Commands:\n"
+                    "h        - show this message;\n"
+                    "c        - continue emulation;\n"
+                    "q        - stop the emulation;\n"
+                    "b 0xXXXX - set breakpoint at PC = 0xXXXX. Only one breakpoint is currently supported;\n"
+                );
+                continue;
             default:
                 fprintf(stderr, "\rUnknown command: %c\n", inpt);
         }

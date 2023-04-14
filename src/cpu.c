@@ -125,6 +125,9 @@ int execOp(struct CPU *cpu, void *RAM) {
             case 0x2F:
                 DBG_PRINT("CPL\n");
                 CPL(); break;
+            case 0x27:
+                DBG_PRINT("DAA\n");
+                DAA(); break;
 
             // <---< Relative conditional jumps >---->
             case 0x20:
@@ -213,6 +216,7 @@ int execOp(struct CPU *cpu, void *RAM) {
         switch (opcode) {
             case 0xCB:
                 DBG_PRINT("PREFIX CB NOT IMPLEMENTED\n");
+                wait(4);
                 // prefix_cb();
                 break;
 
