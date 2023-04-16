@@ -4,3 +4,4 @@
 *.gb
 *.json
 .cache
+*.gdb_history
