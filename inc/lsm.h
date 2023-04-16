@@ -12,16 +12,10 @@
 // >-------------------<
 
 // Ptr to a word at PC
-__always_inline word imm8(void *RAM, struct CPU *cpu) {
-    return MEM8(RAM, cpu->PC++);
-}
+word imm8(void *RAM, struct CPU *cpu);
 
 // Ptr to a dword at PC
-__always_inline dword imm16(void *RAM, struct CPU *cpu) {
-    dword pc = cpu->PC;
-    cpu->PC += 2;
-    return MEM16(RAM, pc);
-}
+dword imm16(void *RAM, struct CPU *cpu);
 
 #define IMM8  imm8(RAM, cpu)
 #define IMM16 imm16(RAM, cpu)

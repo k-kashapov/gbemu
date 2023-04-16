@@ -55,9 +55,13 @@ int LD8(struct CPU *cpu, void *RAM, word opcode) {
     return 0;
 }
 
+word imm8(void *RAM, struct CPU *cpu) {
+    return MEM8(RAM, cpu->PC++);
+}
 
-// >--------------------<
-//      16-bit LOADS
-// >--------------------<
+dword imm16(void *RAM, struct CPU *cpu) {
+    dword pc = cpu->PC;
+    cpu->PC += 2;
+    return MEM16(RAM, pc);
+}
 
-// TODO: implement

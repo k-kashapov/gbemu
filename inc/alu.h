@@ -64,7 +64,7 @@ int INCDEC8(struct CPU *cpu, void *RAM, word opcode);
         wait(4);                            \
         dword tmp = (dword)(cpu->A << 1);   \
         cpu->A = (word)(tmp | cpu->flags.C);\
-        cpu->flags.C = (word)tmp & 0x100;   \
+        cpu->flags.C = !!((word)tmp & 0x100);\
         cpu->flags.Z = 0;                   \
         cpu->flags.N = 0;                   \
         cpu->flags.H = 0;                   \
@@ -73,7 +73,7 @@ int INCDEC8(struct CPU *cpu, void *RAM, word opcode);
 #define RLCA()                                      \
     do {                                            \
         wait(4);                                    \
-        cpu->flags.C = cpu->A >> 7;                 \
+        cpu->flags.C = !!(cpu->A >> 7);             \
         cpu->A = (word)(cpu->A << 1) | cpu->flags.C;\
         cpu->flags.Z = 0;                           \
         cpu->flags.N = 0;                           \

@@ -65,7 +65,12 @@ static void sigint_hdlr(int param) {
         }
     }
 }
-#endif
+#endif // DBG
+
+#ifdef PROXYIO
+word ProxySerialBuf[16] = {0};
+int  SentLen = -1; // How many bytes to print
+#endif // PROXYIO
 
 int initEmu(struct Emu *tgt) {
     word *mem = (word *)malloc(MEM_SIZE);
@@ -132,12 +137,12 @@ int getFile(struct Emu *emu, const char name[static 1]) {
 }
 
 int runEmu(struct Emu *emu) {
-    // DEBUG!!!
+#ifndef CHECK_HEADER
+    emu->cpu.PC  = 0x0;
+#else
     emu->cpu.PC  = 0x100;
-    emu->cpu.A   = 0xAD;
-    emu->cpu.B   = 0xC0;
-    emu->cpu.C   = 0x70;
-    emu->cpu.D   = 0xAB;
+#endif // CHECK_HEADER
+
     emu->cpu.SP  = 0xFFFE;
     emu->cpu.IME = 1;
 
@@ -156,7 +161,15 @@ int runEmu(struct Emu *emu) {
         }
 
         if (ForcedFinish) break;
-#endif
+#endif // DBG
+
+#ifdef PROXYIO
+        if (SentLen > 0) {
+            putc(ProxySerialBuf[0], stdout);
+            SentLen = 0;
+        }
+#endif // PROXYIO
+
         res = execOp(&emu->cpu, emu->RAM);
         // TODO: implement HALT and STOP
     }

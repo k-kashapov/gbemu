@@ -3,6 +3,18 @@ CC = gcc
 # One cycle time scale
 TOKI_WO_TOMORE = 250000
 
+# Wait for ENTER between cycles
+SINGLE_STEP = 0
+
+# Do not check N logo and region
+NO_CHECK = 0
+
+# Strip and optimize size
+S = 0
+
+# Proxy Serial port I/O writes for console output
+PROXYIO = 0
+
 CFLAGS = -I inc -DCPU_FREQ=4194304 -DTIME_SCALE=$(TOKI_WO_TOMORE)
 
 ifeq ($(S), 1)
@@ -17,6 +29,10 @@ endif
 
 ifneq ($(NO_CHECK), 1)
 	CFLAGS += -DCHECK_HEADER
+endif
+
+ifeq ($(PROXYIO), 1)
+	CFLAGS += -DPROXYIO
 endif
 
 include txx.mk

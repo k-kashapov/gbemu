@@ -19,8 +19,8 @@
 
 // <-----< GENERAL ALU OPERATIONS >----->
 
-#define ADD(to, from)   wait(4); SET_FLAG(N, 0); op1 = to; op2 = (word)(from); res = (op1 += op2);
-#define ADDr(from)      ADD(cpu->A, *from); // May change to ptr in future
+#define ADD(to, from)   wait(4); SET_FLAG(N, 0); op1 = to; op2 = (word)(from); res = (to += op2);
+#define ADDr(from)      ADD(cpu->A, *from);
 #define ADDHL()         ADD(cpu->A, HL8);
 #define ADDi()          ADD(cpu->A, IMM8);
 #define ADCr(from)      ADD(cpu->A, *from + cpu->flags.C);
@@ -28,7 +28,7 @@
 #define ADCi()          ADD(cpu->A, IMM8 + cpu->flags.C);
 
 #define SUB(from, what) wait(4); SET_FLAG(N, 1); op1 = from; op2 = (word)(what); res = ((from) -= op2);
-#define SUBr(what)      SUB(cpu->A, *what); // May change to ptr in future
+#define SUBr(what)      SUB(cpu->A, *what);
 #define SUBHL()         SUB(cpu->A, HL8);
 #define SUBi()          SUB(cpu->A, IMM8);
 #define SBCr(from)      SUB(cpu->A, *from + cpu->flags.C);
@@ -110,7 +110,7 @@ enum TYPES {
             tgtNames[GET_SRC(opcode)]               \
         );                                          \
         if (GET_SRC(opcode) == HL) {                \
-            if (GET_TYPE(opcode) == ISIMM) {        \
+            if (GET_ISIMM(opcode) == ISIMM) {       \
                 op##i();                            \
             } else {                                \
                 op##HL();                           \
@@ -126,38 +126,38 @@ int ALU8(struct CPU *cpu, void *RAM, word opcode) {
     // Note: known flags are set inside the corresponding MACRO
 
     switch (GET_TYPE(opcode)) {
-        CASE_OP(ADD);
+    CASE_OP(ADD);
         SET_FLAG(H, (((op1 & 0xF) + (op2 & 0xF)) & 0x10) == 0x10);
         SET_C_FLG_ADD(res);
         break;
-        CASE_OP(ADC);
+    CASE_OP(ADC);
         SET_FLAG(H, (((op1 & 0xF) + (op2 & 0xF)) & 0x10) == 0x10);
         SET_C_FLG_ADD(res);
         break;
-        CASE_OP(SUB);
+    CASE_OP(SUB);
         SET_FLAG(H, ((op1 & 0xF) < (op2 & 0xF)));
         SET_C_FLG_SUB(res);
         break;
-        CASE_OP(SBC);
+    CASE_OP(SBC);
         SET_FLAG(H, ((op1 & 0xF) < (op2 & 0xF)));
         SET_C_FLG_SUB(res);
         break;
-        CASE_OP(AND);
+    CASE_OP(AND);
         break;
-        CASE_OP(XOR);
+    CASE_OP(XOR);
         break;
-        CASE_OP(OR);
+    CASE_OP(OR);
         break;
-        CASE_OP(CP);
+    CASE_OP(CP);
         SET_FLAG(H, ((op1 & 0xF) < (op2 & 0xF)));
         SET_C_FLG_SUB(res);
         break;
     default:
-      fprintf(stderr, "Unknown ALU8 cmd: %d\n", GET_TYPE(opcode));
-      return -1;
+        fprintf(stderr, "Unknown ALU8 cmd: %d\n", GET_TYPE(opcode));
+        return -1;
     }
 
-    DBG_PRINT("res = %x, op1 = %x, op2 = %x\n", res, op1, op2);
+    DBG_PRINT("op1 = %x, op2 = %x, res = %x\n", op1, op2, res);
     SET_Z_FLG(res);
 
     return 0;
