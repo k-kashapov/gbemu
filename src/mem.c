@@ -12,9 +12,9 @@ word MEM8 (void *RAM, dword offs) {
 
 #ifdef PROXYIO
     if (offs == SB) {
-        char res[16];
-        if (scanf("%15s", res) != 1) {
-            fprintf(stderr, "Could not read char from console!\n");
+        char res = getchar();
+        while (res == '\n') {
+            res = getchar();
         }
         return (word)res[0];
     } else
@@ -41,9 +41,7 @@ dword MEM16 (void *RAM, dword offs) {
 
 #ifdef PROXYIO
     if (offs == SB) {
-        dword res = (dword)((word)getchar() << 8);
-        res |= (word)getchar();
-        return res;
+        fprintf(stderr, "Cannot read 16-bit values from serial port!\n");
     } else
 #endif // PROXYIO
 
@@ -55,8 +53,7 @@ dword *MEMp16(void *RAM, dword offs) {
 
 #ifdef PROXYIO
     if (offs == SB) {
-        SentLen = 2;
-        return (dword *)ProxySerialBuf;
+        fprintf(stderr, "Cannot write 16-bit values into serial port!\n");
     } else
 #endif // PROXYIO
 
