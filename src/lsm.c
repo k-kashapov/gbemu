@@ -49,7 +49,7 @@ int LD8(struct CPU *cpu, void *RAM, word opcode) {
     word *dst = GET_REGISTER(GET_DST(opcode));
     word *src = GET_REGISTER(GET_SRC(opcode));
 
-    DBG_PRINT("LDrr %c, %c\n", tgtNames[GET_DST(opcode)], tgtNames[GET_DST(opcode)]);
+    DBG_PRINT("LDrr %c, %c\n", tgtNames[GET_DST(opcode)], tgtNames[GET_SRC(opcode)]);
     LDrr(dst, src);
 
     return 0;

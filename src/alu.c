@@ -2,10 +2,7 @@
 #include "alu.h"
 #include "clock.h"
 
-#define SET_FLAG(FLG, val)  do cpu->flags.FLG = (val); while(0)
-#define SET_Z_FLG(res)      SET_FLAG(Z, res == 0)
-#define SET_C_FLG_ADD(res)  SET_FLAG(C, res > 0xFF)
-#define SET_C_FLG_SUB(res)  SET_FLAG(C, op1 > op2)
+#define SET_Z_FLG(res) SET_FLAG(ZFLG, res == 0)
 
 // >-----------------<
 //      ALU 8-bit
@@ -19,50 +16,50 @@
 
 // <-----< GENERAL ALU OPERATIONS >----->
 
-#define ADD(to, from)   wait(4); SET_FLAG(N, 0); op1 = to; op2 = (word)(from); res = (to += op2);
+#define ADD(to, from)   wait(4); SET_FLAG(NFLG, 0); op1 = to; op2 = (word)(from); res = ((to) + op2); to = (word)res;
 #define ADDr(from)      ADD(cpu->A, *from);
 #define ADDHL()         ADD(cpu->A, HL8);
 #define ADDi()          ADD(cpu->A, IMM8);
-#define ADCr(from)      ADD(cpu->A, *from + cpu->flags.C);
-#define ADCHL()         ADD(cpu->A, HL8 + cpu->flags.C);
-#define ADCi()          ADD(cpu->A, IMM8 + cpu->flags.C);
+#define ADCr(from)      ADD(cpu->A, *from + !!(cpu->F & CFLG));
+#define ADCHL()         ADD(cpu->A, HL8 + !!(cpu->F & CFLG));
+#define ADCi()          ADD(cpu->A, IMM8 + !!(cpu->F & CFLG));
 
-#define SUB(from, what) wait(4); SET_FLAG(N, 1); op1 = from; op2 = (word)(what); res = ((from) -= op2);
+#define SUB(from, what) wait(4); SET_FLAG(NFLG, 1); op1 = from; op2 = (word)(what); res = ((dword)(from) - op2); from = (word)res;
 #define SUBr(what)      SUB(cpu->A, *what);
 #define SUBHL()         SUB(cpu->A, HL8);
 #define SUBi()          SUB(cpu->A, IMM8);
-#define SBCr(from)      SUB(cpu->A, *from + cpu->flags.C);
-#define SBCHL()         SUB(cpu->A, HL8 + cpu->flags.C);
-#define SBCi()          SUB(cpu->A, IMM8 + cpu->flags.C);
+#define SBCr(from)      SUB(cpu->A, *from + !!(cpu->F & CFLG));
+#define SBCHL()         SUB(cpu->A, HL8 + !!(cpu->F & CFLG));
+#define SBCi()          SUB(cpu->A, IMM8 + !!(cpu->F & CFLG));
 
-#define CP(what)        wait(4); SET_FLAG(N, 1); op1 = cpu->A; op2 = (word)(what); res = (cpu->A - op2);
+#define CP(what)        wait(4); SET_FLAG(NFLG, 1); op1 = cpu->A; op2 = (word)(what); res = ((dword)cpu->A - op2); cpu->A = (word)res;
 #define CPr(what)       CP(*what);
 #define CPHL()          CP(HL8);
 #define CPi()           CP(IMM8);
 
-#define INC(what)       wait(4); SET_FLAG(N, 0); op1 = what; op2 = 1; res = ((what) += 1);
+#define INC(what)       wait(4); SET_FLAG(NFLG, 0); op1 = what; op2 = 1; res = ((dword)(what) + 1); what = (word)res;
 #define INCr(what)      INC(*what);
 #define INCHL()         INC(*HL8p);
 
-#define DEC(what)       wait(4); SET_FLAG(N, 1); op1 = what; op2 = 1; res = ((what) -= 1);
+#define DEC(what)       wait(4); SET_FLAG(NFLG, 1); op1 = what; op2 = 1; res = ((dword)(what) - 1); what = (word)res;
 #define DECr(what)      DEC(*what);
 #define DECHL()         DEC(*HL8p);
 
 // <-----< BIT OPERATIONS >----->
 
-#define LOGIC(op, with) wait(4); SET_FLAG(N, 0); SET_FLAG(C, 0); res = (cpu->A op##= (with));
+#define LOGIC(op, with) wait(4); SET_FLAG(NFLG, 0); SET_FLAG(CFLG, 0); res = (cpu->A op (with)); cpu->A = (word)res;
 
-#define AND(with)   LOGIC(&, (with)); SET_FLAG(H, 1);
+#define AND(with)   LOGIC(&, (with)); SET_FLAG(HFLG, 1);
 #define ANDr(with)  AND(*with);
 #define ANDHL()     AND(HL8);
 #define ANDi()      AND(IMM8);
 
-#define OR(with)    LOGIC(|, (with)); SET_FLAG(H, 0);
+#define OR(with)    LOGIC(|, (with)); SET_FLAG(HFLG, 0);
 #define ORr(with)   OR(*with);
 #define ORHL()      OR(HL8);
 #define ORi()       OR(IMM8);
 
-#define XOR(with)   LOGIC(^, (with)); SET_FLAG(H, 0);
+#define XOR(with)   LOGIC(^, (with)); SET_FLAG(HFLG, 0);
 #define XORr(with)  XOR(*with);
 #define XORHL()     XOR(HL8);
 #define XORi()      XOR(IMM8);
@@ -127,20 +124,20 @@ int ALU8(struct CPU *cpu, void *RAM, word opcode) {
 
     switch (GET_TYPE(opcode)) {
     CASE_OP(ADD);
-        SET_FLAG(H, (((op1 & 0xF) + (op2 & 0xF)) & 0x10) == 0x10);
-        SET_C_FLG_ADD(res);
+        SET_FLAG(HFLG, (((op1 & 0xF) + (op2 & 0xF)) & 0x10) == 0x10);
+        SET_FLAG(CFLG, ((res & 0x100) == 0x100));
         break;
     CASE_OP(ADC);
-        SET_FLAG(H, (((op1 & 0xF) + (op2 & 0xF)) & 0x10) == 0x10);
-        SET_C_FLG_ADD(res);
+        SET_FLAG(HFLG, (((op1 & 0xF) + (op2 & 0xF)) & 0x10) == 0x10);
+        SET_FLAG(CFLG, ((res & 0x100) == 0x100));
         break;
     CASE_OP(SUB);
-        SET_FLAG(H, ((op1 & 0xF) < (op2 & 0xF)));
-        SET_C_FLG_SUB(res);
+        SET_FLAG(HFLG, ((op1 & 0xF) < (op2 & 0xF)));
+        SET_FLAG(CFLG, ((op1) < (op2)));
         break;
     CASE_OP(SBC);
-        SET_FLAG(H, ((op1 & 0xF) < (op2 & 0xF)));
-        SET_C_FLG_SUB(res);
+        SET_FLAG(HFLG, ((op1 & 0xF) < (op2 & 0xF)));
+        SET_FLAG(CFLG, ((op1) < (op2)));
         break;
     CASE_OP(AND);
         break;
@@ -149,8 +146,8 @@ int ALU8(struct CPU *cpu, void *RAM, word opcode) {
     CASE_OP(OR);
         break;
     CASE_OP(CP);
-        SET_FLAG(H, ((op1 & 0xF) < (op2 & 0xF)));
-        SET_C_FLG_SUB(res);
+        SET_FLAG(HFLG, ((op1 & 0xF) < (op2 & 0xF)));
+        SET_FLAG(CFLG, ((op1) < (op2)));
         break;
     default:
         fprintf(stderr, "Unknown ALU8 cmd: %d\n", GET_TYPE(opcode));
@@ -186,7 +183,7 @@ int INCDEC8(struct CPU *cpu, void *RAM, word opcode) {
             INCr(GET_REGISTER(tgt));
         }
 
-        SET_FLAG(H, (((op1 & 0xF) + (op2 & 0xF)) & 0x10) == 0x10);
+        SET_FLAG(HFLG, (((op1 & 0xF) + (op2 & 0xF)) & 0x10) == 0x10);
 
     } else {
         DBG_PRINT("DEC %c\n", tgtNames[tgt]);
@@ -196,9 +193,10 @@ int INCDEC8(struct CPU *cpu, void *RAM, word opcode) {
             DECr(GET_REGISTER(tgt));
         }
 
-        SET_FLAG(H, ((op1 & 0xF) < (op2 & 0xF)));
+        SET_FLAG(HFLG, ((op1 & 0xF) < (op2 & 0xF)));
     }
 
+    DBG_PRINT("op1 = %x, op2 = %x, res = %x\n", op1, op2, res);
     SET_Z_FLG(res);
 
     return 0;

@@ -3,9 +3,6 @@ CC = gcc
 # One cycle time scale
 TOKI_WO_TOMORE = 250000
 
-# Wait for ENTER between cycles
-SINGLE_STEP = 0
-
 # Do not check N logo and region
 NO_CHECK = 0
 
@@ -21,10 +18,6 @@ ifeq ($(S), 1)
 	CFLAGS += -s -Os
 else
 	CFLAGS += -g -O0 -DDBG
-endif
-
-ifeq ($(SINGLE_STEP), 1)
-	CFLAGS += -DSINGLE_STEP
 endif
 
 ifneq ($(NO_CHECK), 1)

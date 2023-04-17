@@ -29,18 +29,7 @@ struct CPU {
             union {
                 struct {
                     word A;
-                    union {
-                        struct {
-                            // TODO: replace with bit operations as compiler can
-                            //       change the order of bitfields in a struct
-                            word RSV : 4;
-                            word C   : 1;
-                            word H   : 1;
-                            word N   : 1;
-                            word Z   : 1;
-                        };
-                        word as_word;
-                    } flags;
+                    word F;
                 };
 
                 dword AF;
@@ -54,6 +43,12 @@ struct CPU {
 };
 
 #undef DWORDREG
+
+// Bits of F register
+#define CFLG 4U
+#define HFLG 5U
+#define NFLG 6U
+#define ZFLG 7U
 
 enum EXEC_RET {
     DONE =  0,

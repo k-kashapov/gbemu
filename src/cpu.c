@@ -17,17 +17,13 @@ enum FLAGS {
 #ifdef DBG
 void dumpState(struct CPU *cpu, void *RAM, word opcode) {
     DBG_PRINT("\nExecuting opcode: 0x%02X.   B: %02X   C: %02X   D: %02X   E: %02X   H: %02X   L: %02X   A: %02X   F: %02X   PC: %04X   SP: %04X\n",
-               opcode, cpu->B, cpu->C, cpu->D, cpu->E, cpu->H, cpu->L, cpu->A, cpu->flags.as_word, cpu->PC, cpu->SP);
+               opcode, cpu->B, cpu->C, cpu->D, cpu->E, cpu->H, cpu->L, cpu->A, cpu->F, cpu->PC, cpu->SP);
     DBG_PRINT("                  0x%02X\n", ((word *)RAM)[cpu->PC + 1]);
     DBG_PRINT("                  0x%02X\n", ((word *)RAM)[cpu->PC + 2]);
 }
 #endif
 
 int execOp(struct CPU *cpu, void *RAM) {
-#ifdef SINGLE_STEP
-    getchar();
-#endif
-    
     word opcode = ((word *)RAM)[cpu->PC];
 
 #ifdef DBG
@@ -139,16 +135,16 @@ int execOp(struct CPU *cpu, void *RAM) {
             // <---< Relative conditional jumps >---->
             case 0x20:
                 DBG_PRINT("JR NZ 0x%04X += 0x%02X\n", cpu->PC, *((word *)RAM + cpu->PC));
-                JRc(cpu->flags.Z == 0); break;
+                JRc((cpu->F & (1 << ZFLG)) == 0); break;
             case 0x30:
                 DBG_PRINT("JR NC 0x%04X += 0x%02X\n", cpu->PC, *((word *)RAM + cpu->PC));
-                JRc(cpu->flags.C == 0); break;
+                JRc((cpu->F & (1 << CFLG)) == 0); break;
             case 0x28:
                 DBG_PRINT("JR Z 0x%04X += 0x%02X\n", cpu->PC, *((word *)RAM + cpu->PC));
-                JRc(cpu->flags.Z); break;
+                JRc(cpu->F & (1 << ZFLG)); break;
             case 0x38:
                 DBG_PRINT("JR C 0x%04X += 0x%02X\n", cpu->PC, *((word *)RAM + cpu->PC));
-                JRc(cpu->flags.C); break;
+                JRc(cpu->F & (1 << CFLG)); break;
             case 0x18:
                 DBG_PRINT("JR 0x%04X += 0x%02X\n", cpu->PC, *((word *)RAM + cpu->PC));
                 JR(); break;
@@ -252,42 +248,42 @@ int execOp(struct CPU *cpu, void *RAM) {
             // <---< Conditional jumps and calls >---->
             case 0xC2:
                 DBG_PRINT("JP NZ: 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)(uintptr_t)((word *)RAM + cpu->PC));
-                JPci(cpu->flags.Z == 0); break;
+                JPci((cpu->F & (1 << ZFLG)) == 0); break;
             case 0xD2:
                 DBG_PRINT("JP NC: 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)(uintptr_t)((word *)RAM + cpu->PC));
-                JPci(cpu->flags.C == 0); break;
+                JPci((cpu->F & (1 << CFLG)) == 0); break;
             case 0xCA:
                 DBG_PRINT("JP Z: 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)(uintptr_t)((word *)RAM + cpu->PC));
-                JPci(cpu->flags.Z); break;
+                JPci(cpu->F & (1 << ZFLG)); break;
             case 0xDA:
                 DBG_PRINT("JP C: 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)(uintptr_t)((word *)RAM + cpu->PC));
-                JPci(cpu->flags.C); break;
+                JPci(cpu->F & (1 << CFLG)); break;
 
             case 0xC4:
                 DBG_PRINT("CALL NZ: 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)(uintptr_t)((word *)RAM + cpu->PC));
-                CALLci(cpu->flags.Z == 0); break;
+                CALLci((cpu->F & (1 << ZFLG)) == 0); break;
             case 0xD4:
                 DBG_PRINT("CALL NC: 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)(uintptr_t)((word *)RAM + cpu->PC));
-                CALLci(cpu->flags.C == 0); break;
+                CALLci((cpu->F & (1 << CFLG)) == 0); break;
             case 0xCC:
                 DBG_PRINT("CALL Z: 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)(uintptr_t)((word *)RAM + cpu->PC));
-                CALLci(cpu->flags.Z); break;
+                CALLci(cpu->F & (1 << ZFLG)); break;
             case 0xDC:
                 DBG_PRINT("CALL C: 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)(uintptr_t)((word *)RAM + cpu->PC));
-                CALLci(cpu->flags.C); break;
+                CALLci(cpu->F & (1 << CFLG)); break;
 
             case 0xC0:
                 DBG_PRINT("RET NZ: 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)(uintptr_t)((word *)RAM + cpu->SP));
-                RETc(cpu->flags.Z == 0); break;
+                RETc((cpu->F & (1 << ZFLG)) == 0); break;
             case 0xD0:
                 DBG_PRINT("RET NC: 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)(uintptr_t)((word *)RAM + cpu->SP));
-                RETc(cpu->flags.C == 0); break;
+                RETc((cpu->F & (1 << CFLG)) == 0); break;
             case 0xC8:
                 DBG_PRINT("RET Z: 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)(uintptr_t)((word *)RAM + cpu->SP));
-                RETc(cpu->flags.Z); break;
+                RETc(cpu->F & (1 << ZFLG)); break;
             case 0xD8:
                 DBG_PRINT("RET C: 0x%04X -> 0x%04X\n", cpu->PC, *(dword *)(uintptr_t)((word *)RAM + cpu->SP));
-                RETc(cpu->flags.C); break;
+                RETc(cpu->F & (1 << CFLG)); break;
 
             case 0xD9:
                 DBG_PRINT("RETI\n");

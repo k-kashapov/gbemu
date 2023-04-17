@@ -18,36 +18,58 @@
 #ifdef DBG
 static int      ForcedFinish = 0;
 static unsigned Breakpoint   = 0x100;
+static unsigned SingleStep   = 1;
+static word *RAM_ptr = NULL;
 
 static void sigint_hdlr(int param) {
     (void) param;
-    
-    fprintf(stderr, "\rWelcome to debug interface.\n");
 
     while (1) {
         fprintf(stderr, "\r-> ");
         int inpt = getchar();
-        if (inpt == '\n') continue;
         switch (inpt) {
+            case '\n':
+                continue;
             case 'q':
                 ForcedFinish = 1;
                 return;
             case 'c':
+                SingleStep = 0;
+                return;
+            case 's':
+                SingleStep = 1;
                 return;
             case 'b':
                 {
                     char str[16];
                     int res = scanf("%s", str);
                     if (res < 1) {
-                        fprintf(stderr, "\rInvalid breakpoint option\n");
+                        fprintf(stderr, "\rInvalid breakpoint address\n");
                     } else {
                         unsigned PC = 0;
                         res = sscanf(str, " %x ", &PC);
                         if (res < 1) {
-                            fprintf(stderr, "\rInvalid breakpoint option\n");
+                            fprintf(stderr, "\rInvalid breakpoint address\n");
                         } else {
                             fprintf(stderr, "Setting breakpoint at 0x%x\n", PC);
                             Breakpoint = PC;
+                        }
+                    }
+                } continue;
+            case 'x':
+                {
+                    char str[16];
+                    int res = scanf("%s", str);
+                    if (res < 1) {
+                        fprintf(stderr, "\rInvalid print address\n");
+                    } else {
+                        unsigned addr = 0;
+                        res = sscanf(str, " %x ", &addr);
+                        if (res < 1) {
+                            fprintf(stderr, "\rInvalid print address\n");
+                        } else {
+                            fprintf(stderr, "RAM at 0x%x:\n", addr);
+                            dump_mem(RAM_ptr + addr, 32);
                         }
                     }
                 } continue;
@@ -56,8 +78,10 @@ static void sigint_hdlr(int param) {
                     "Commands:\n"
                     "h        - show this message;\n"
                     "c        - continue emulation;\n"
+                    "s        - single step the emulation\n"
                     "q        - stop the emulation;\n"
                     "b 0xXXXX - set breakpoint at PC = 0xXXXX. Only one breakpoint is currently supported;\n"
+                    "x 0xXXXX - dump memory contents at 0xXXXX. 32 bytes of data are printed 8x4;\n"
                 );
                 continue;
             default:
@@ -93,6 +117,8 @@ int initEmu(struct Emu *tgt) {
         perror("sigaction");
         return res;
     }
+
+    RAM_ptr = tgt->RAM;
 #endif
 
     return OK;
@@ -153,10 +179,17 @@ int runEmu(struct Emu *emu) {
 #endif
 
     while (!res) {
+
 #ifdef DBG
         if (Breakpoint == emu->cpu.PC) {
             DBG_PRINT("\nBREAKPOINT at 0x%x:", Breakpoint);
             dumpState(&emu->cpu, emu->RAM, ((word *)emu->RAM)[emu->cpu.PC]);
+            fprintf(stderr, "\rWelcome to debug interface.\n");
+            sigint_hdlr(0);
+        }
+
+        if (SingleStep) {
+            SingleStep = 0;
             sigint_hdlr(0);
         }
 

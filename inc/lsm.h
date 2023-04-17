@@ -91,8 +91,8 @@ int LD8rel(struct CPU *cpu, void *RAM, word opcode);
     do {                                                                \
         wait(4);                                                        \
         sword e = (sword)IMM8;                                          \
-        SET_FLAG(H, ((((cpu->SP & 0x0F) + (e & 0x0F)) & 0x10) == 0x10));\
-        SET_FLAG(C, (((cpu->SP & 0xFF) + e) > 0xFF));                   \
+        SET_FLAG(HFLG, ((((cpu->SP & 0x0F) + (e & 0x0F)) & 0x10) == 0x10));\
+        SET_FLAG(CFLG, ((((cpu->SP & 0xFF) + e) & 0x100) == 0x100));    \
         dword addr = (dword)((sdword)cpu->SP + (sdword)e);              \
         cpu->HL = MEM16(RAM, addr);                                     \
     } while(0)
