@@ -32,7 +32,7 @@
 #define SBCHL()         SUB(cpu->A, HL8 + !!(cpu->F & CFLG));
 #define SBCi()          SUB(cpu->A, IMM8 + !!(cpu->F & CFLG));
 
-#define CP(what)        wait(4); SET_FLAG(NFLG, 1); op1 = cpu->A; op2 = (word)(what); res = ((dword)cpu->A - op2); cpu->A = (word)res;
+#define CP(what)        wait(4); SET_FLAG(NFLG, 1); op1 = cpu->A; op2 = (word)(what); res = ((dword)cpu->A - op2);
 #define CPr(what)       CP(*what);
 #define CPHL()          CP(HL8);
 #define CPi()           CP(IMM8);

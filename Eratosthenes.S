@@ -65,7 +65,9 @@ FillDivisable:
 ;   None
 PrintA:
     LD B, A
-    ADD "0"
+    ; ADD "0"
+    LD [$FF01], A
+    LD A, "\n"
     LD [$FF01], A
     LD A, B
 
@@ -105,12 +107,32 @@ Start:
     CALL NextPrime ; Find next prime
     CALL PrintA    ; Print it out (if it's 0-9)
 
+    LD B, A        ; "Previous prime"
+    LD H, $C0      ; Ptr to "previous prime" in sieve
+    LD L, A        ; HL = 0xC0YY, where YY = last sieved prime
+    CALL NextPrime ; Find next prime
+    CALL PrintA    ; Print it out (if it's 0-9)
+
+    LD B, A        ; "Previous prime"
+    LD H, $C0      ; Ptr to "previous prime" in sieve
+    LD L, A        ; HL = 0xC0YY, where YY = last sieved prime
+    CALL NextPrime ; Find next prime
+    CALL PrintA    ; Print it out (if it's 0-9)
+
+    LD B, A        ; "Previous prime"
+    LD H, $C0      ; Ptr to "previous prime" in sieve
+    LD L, A        ; HL = 0xC0YY, where YY = last sieved prime
+    CALL NextPrime ; Find next prime
+    CALL PrintA    ; Print it out (if it's 0-9)
+
 ; DEBUG LOOP
-    XOR A
-Loop:
-    INC A
-    CALL PrintA
-    CP 9
-    JR NZ, Loop
+;    XOR A
+;Loop:
+;    INC A
+;    CALL PrintA
+;    CP 9
+;    JR NZ, Loop
 
 STOP
+
+
