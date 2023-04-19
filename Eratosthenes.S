@@ -65,7 +65,7 @@ FillDivisable:
 ;   None
 PrintA:
     LD B, A
-    ; ADD "0"
+    ADD "0"
     LD [$FF01], A
     LD A, "\n"
     LD [$FF01], A

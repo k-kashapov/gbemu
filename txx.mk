@@ -12,5 +12,5 @@ CFLAGS += -g -static-pie -fmax-errors=100 -Wall -Wextra -Waggressive-loop-optimi
           -Wvariadic-macros -Wrestrict -Wno-missing-field-initializers -Wno-narrowing        \
           -Wbad-function-cast -Wvla -Wzero-length-bounds -Wmissing-parameter-type            \
           -Wmissing-prototypes -Wnested-externs -Wstrict-prototypes -Wunused-value           \
-          -Wpointer-sign -Wno-varargs -Wunused-macros -fcheck-new -fstack-protector          \
+          -Wpointer-sign -Wno-varargs -fcheck-new -fstack-protector                          \
           -fstrict-overflow -fno-omit-frame-pointer -fPIE -lm -pie

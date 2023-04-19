@@ -83,25 +83,21 @@ int INCDEC8(struct CPU *cpu, void *RAM, word opcode);
         cpu->A = (word)(cpu->A << 1) | (cpu->F & (1 << CFLG));  \
     } while(0)
 
-// #define RRA()                               \
-//     do {                                    \
-//         wait(4);                            \
-//         dword tmp = (dword)(cpu->A << 1);   \
-//         cpu->A = (word)(tmp | cpu->flags.C);\
-//         cpu->flags.C = (word)tmp & 0x100;   \
-//         cpu->flags.Z = 0;                   \
-//         cpu->flags.N = 0;                   \
-//         cpu->flags.H = 0;                   \
-//     } while(0)
+#define RRA()                                        \
+    do {                                             \
+        wait(4);                                     \
+        cpu->F = 0;                                  \
+        word oldC = cpu->F & (1 << CFLG);            \
+        SET_FLAG(CFLG, cpu->A & 1);                  \
+        cpu->A = (word)((cpu->A >> 1) | (oldC << 7));\
+    } while(0)
 
-// #define RRCA()                                      \
-//     do {                                            \
-//         wait(4);                                    \
-//         cpu->flags.C = cpu->A >> 7;                 \
-//         cpu->A = (word)(cpu->A << 1) | cpu->flags.C;\
-//         cpu->flags.Z = 0;                           \
-//         cpu->flags.N = 0;                           \
-//         cpu->flags.H = 0;                           \
-//     } while(0)
+#define RRCA()                                              \
+    do {                                                    \
+        wait(4);                                            \
+        cpu->F = 0;                                         \
+        SET_FLAG(CFLG, cpu->A & 1)                          \
+        cpu->A = (word)(cpu->A >> 1) | (word)(cpu->A << 7); \
+    } while(0)
 
 #endif // ALU_H
