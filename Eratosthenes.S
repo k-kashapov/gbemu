@@ -1,6 +1,10 @@
 SECTION "Text", ROM0
     JP Start
 
+; Number representation in hex
+HEX: 
+    db "0123456789ABCDEF"
+
 ; <---------< Clean Up >---------->
 ; Fill memory range with zeroes
 ; Expects:
@@ -19,30 +23,46 @@ CleanLoop:
 
 ; <---------< Next Prime >---------->
 ; Returns next prime number after the
-; one stored in register. 
+; one stored in BC. 
 ; Changes the memory in range [HL, HL + 255]
 ; Expects:
-;   B  - previous prime
-;   HL - pointer to the last prime of the sieve of Eratosthenes
+;   D - Curr bit
 ; Used registers:
-;   HL - iterator
-;   D  - new prime storage
-;   BC - iteration step
+;   A - tmp storage
 ; Returns:
-;   A  - found prime
-;   HL - somewhere far away (255 * New Prime)
+
 NextPrime:
-    LD D, B ; Load Save previous prime to D
+    LD A, [HL]
+BitLoop:
+    AND 1
+    ; Plan:
+    ;   E = *(HL)
+    ;   A = E
+    ;   RRCA          // C flag = lowest bit
+    ;   JR NC Found   // Bit = 0 - found our prime number
+    ;   INC BC        // BC was not the prime we're looking for
+    ;   DEC D         // Decrease D from 7 to 0
+    ;   JR NZ BitLoop // Iterate until all bits in byte are checked
+    ;   // If D == 0
+    ;   INC HL            // Start checking the next byte
+    ;   LD D, 7 (maybe 8) // Reset checked bits num
+    ;   JR BitLoop
+    ; Found:
+    ;   OR 1             // Set the found bit
+    ;   while (D-- != 0) // Rotate A until it's back to normal
+    ;       RRCA
+    ;   *(HL) = A        // Save changed bit
+    ;   RET              // Return found prime in BC
 
-FindPrime:
-    INC D
-    INC HL
-    LD A, [HL] ; Check if current number is prime
-    CP 0        ; 
-    JR NZ, FindPrime
-
-    ; Found next prime number. It is now stored in D.
-    ; And HL points to the zero filled byte. A = 0
+    ; Next up we need to fill bits that correspond to every number divisable by the BC
+    ; Fill:
+    ;   
+    ;
+    ;
+    ;
+    ;
+    ;
+    ;
 
 FillDivisable:
     INC [HL]             ; Mark as sieved
@@ -54,22 +74,63 @@ FillDivisable:
     LD A, D ; Return the found prime in A
     RET
 
-; <-----< Print num A >------>
-; Prints number stored in A to the serial port
+; <-----< Print A >------>
+; Prints sinlge lower nibble stored in A in hex to the serial port
 ; Expects:
-;   A - number
+;   A - nibble of number
 ; Used registers:
-;   A - "0" added
-;   B - tmp storage
+;   A
+;   D - tmp storage
+;   E - tmp storage
 ; Returns:
 ;   None
-PrintA:
-    LD B, A
-    ADD "0"
+PrintNibble:
+    LD D, 0
+    LD E, A
+    LD HL, HEX
+    ADD HL, DE
+    LD A, [HL]
     LD [$FF01], A
+    RET
+
+; <-----< Print number >------>
+; Prints number stored in B:C to the serial port
+; Expects:
+;   B - HI byte of number
+;   C - LO byte of number
+; Used registers:
+;   A
+;   D - tmp storage
+;   E - tmp storage
+; Returns:
+;   A = '\n'
+PrintBC:
+    LD A, B
+    RRCA
+    RRCA
+    RRCA
+    RRCA
+    AND $0F
+    CALL PrintNibble
+
+    LD A, B
+    AND $0F
+    CALL PrintNibble
+
+    LD A, C
+    RRCA
+    RRCA
+    RRCA
+    RRCA
+    AND $0F
+    CALL PrintNibble
+
+    LD A, C
+    AND $0F
+    CALL PrintNibble
+
     LD A, "\n"
     LD [$FF01], A
-    LD A, B
 
     RET
 
@@ -84,46 +145,13 @@ Start:
     LD B,  $5    ; Fill with 255 zeroes
     CALL CleanUp
 
-    LD B, 1        ; "Previous prime"
-    LD HL, $C001   ; Ptr to "previous prime" in sieve
+    LD BC, $0001   ; "Previous prime"
+    LD HL, $C000   ; Ptr to sieve start
+    LD D,  7       ; Bit number
     CALL NextPrime ; Find next prime
-    CALL PrintA    ; Print it out (if it's 0-9)
 
-    LD B, A        ; "Previous prime"
-    LD H, $C0      ; Ptr to "previous prime" in sieve
-    LD L, A        ; HL = 0xC0YY, where YY = last sieved prime
-    CALL NextPrime ; Find next prime
-    CALL PrintA    ; Print it out (if it's 0-9)
-
-    LD B, A        ; "Previous prime"
-    LD H, $C0      ; Ptr to "previous prime" in sieve
-    LD L, A        ; HL = 0xC0YY, where YY = last sieved prime
-    CALL NextPrime ; Find next prime
-    CALL PrintA    ; Print it out (if it's 0-9)
-
-    LD B, A        ; "Previous prime"
-    LD H, $C0      ; Ptr to "previous prime" in sieve
-    LD L, A        ; HL = 0xC0YY, where YY = last sieved prime
-    CALL NextPrime ; Find next prime
-    CALL PrintA    ; Print it out (if it's 0-9)
-
-    LD B, A        ; "Previous prime"
-    LD H, $C0      ; Ptr to "previous prime" in sieve
-    LD L, A        ; HL = 0xC0YY, where YY = last sieved prime
-    CALL NextPrime ; Find next prime
-    CALL PrintA    ; Print it out (if it's 0-9)
-
-    LD B, A        ; "Previous prime"
-    LD H, $C0      ; Ptr to "previous prime" in sieve
-    LD L, A        ; HL = 0xC0YY, where YY = last sieved prime
-    CALL NextPrime ; Find next prime
-    CALL PrintA    ; Print it out (if it's 0-9)
-
-    LD B, A        ; "Previous prime"
-    LD H, $C0      ; Ptr to "previous prime" in sieve
-    LD L, A        ; HL = 0xC0YY, where YY = last sieved prime
-    CALL NextPrime ; Find next prime
-    CALL PrintA    ; Print it out (if it's 0-9)
+    LD BC, $FFFF
+    CALL PrintBC
 
 ; DEBUG LOOP
 ;    XOR A
