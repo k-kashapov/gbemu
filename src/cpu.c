@@ -16,8 +16,14 @@ enum FLAGS {
 
 #ifdef DBG
 void dumpState(struct CPU *cpu, void *RAM, word opcode) {
-    DBG_PRINT("\nExecuting opcode: 0x%02X.   B: %02X   C: %02X   D: %02X   E: %02X   H: %02X   L: %02X   A: %02X   F: %02X   PC: %04X   SP: %04X\n",
-               opcode, cpu->B, cpu->C, cpu->D, cpu->E, cpu->H, cpu->L, cpu->A, cpu->F, cpu->PC, cpu->SP);
+    DBG_PRINT("\nExecuting opcode: 0x%02X.   B: %02X   C: %02X   D: %02X   E: %02X   H: %02X   L: %02X   A: %02X   F: %02X [%c%c%c%c]  PC: %04X   SP: %04X\n",
+               opcode, cpu->B, cpu->C, cpu->D, cpu->E, cpu->H, cpu->L, cpu->A, cpu->F, 
+               cpu->F & (1 << ZFLG) ? 'Z' : '-', 
+               cpu->F & (1 << NFLG) ? 'N' : '-', 
+               cpu->F & (1 << HFLG) ? 'H' : '-',
+               cpu->F & (1 << CFLG) ? 'C' : '-',
+               cpu->PC, cpu->SP);
+    
     DBG_PRINT("                  0x%02X\n", ((word *)RAM)[cpu->PC + 1]);
     DBG_PRINT("                  0x%02X\n", ((word *)RAM)[cpu->PC + 2]);
 }
@@ -131,6 +137,13 @@ int execOp(struct CPU *cpu, void *RAM) {
             case 0x17:
                 DBG_PRINT("RLA\n");
                 RLA(); break;
+
+            case 0x0F:
+                DBG_PRINT("RRCA\n");
+                RRCA(); break;
+            case 0x1F:
+                DBG_PRINT("RRA\n");
+                RRA(); break;
 
             // <---< Relative conditional jumps >---->
             case 0x20:

@@ -50,29 +50,29 @@ int INCDEC8(struct CPU *cpu, void *RAM, word opcode);
 // Decimal adjust acumulator
 #define DAA()                                               \
     do {                                                    \
-        if (!(cpu->F & NFLG)) {                             \
-            if ((cpu->F & CFLG) || cpu->A > 0x99) {         \
+        if (!(cpu->F & (1 << NFLG))) {                      \
+            if ((cpu->F & (1 << CFLG)) || cpu->A > 0x99) {  \
                 cpu->A += 0x60;                             \
                 SET_FLAG(CFLG, 1);                          \
             }                                               \
-            if ((cpu->F & HFLG) || (cpu->A & 0x0F) > 0x09) {\
+            if ((cpu->F & (1 << HFLG)) || (cpu->A & 0x0F) > 0x09) {\
                 cpu->A += 0x06;                             \
             }                                               \
         } else {                                            \
-            if ((cpu->F & CFLG)) cpu->A -= 0x60;            \
-            if ((cpu->F & HFLG)) cpu->A -= 0x06;            \
+            if ((cpu->F & (1 << CFLG))) cpu->A -= 0x60;     \
+            if ((cpu->F & (1 << HFLG))) cpu->A -= 0x06;     \
         }                                                   \
-        SET_FLAG(ZFLG, (cpu->A));                           \
+        SET_FLAG(ZFLG, (cpu->A == 0));                      \
         SET_FLAG(HFLG, 0);                                  \
     } while(0)
 
-#define RLA()                                   \
-    do {                                        \
-        wait(4);                                \
-        dword tmp = (dword)(cpu->A << 1);       \
-        cpu->A = (word)(tmp | (cpu->F & CFLG)); \
-        cpu->F = 0;                             \
-        SET_FLAG(CFLG, ((word)tmp & 0x100));    \
+#define RLA()                                           \
+    do {                                                \
+        wait(4);                                        \
+        dword tmp = (dword)(cpu->A << 1);               \
+        cpu->A = (word)(tmp | ((cpu->F >> CFLG) & 1));  \
+        cpu->F = 0;                                     \
+        SET_FLAG(CFLG, (tmp & 0x100));                  \
     } while(0)
 
 #define RLCA()                                                  \
@@ -86,8 +86,8 @@ int INCDEC8(struct CPU *cpu, void *RAM, word opcode);
 #define RRA()                                        \
     do {                                             \
         wait(4);                                     \
+        word oldC = ((cpu->F >> CFLG) & 1);          \
         cpu->F = 0;                                  \
-        word oldC = cpu->F & (1 << CFLG);            \
         SET_FLAG(CFLG, cpu->A & 1);                  \
         cpu->A = (word)((cpu->A >> 1) | (oldC << 7));\
     } while(0)
@@ -96,7 +96,7 @@ int INCDEC8(struct CPU *cpu, void *RAM, word opcode);
     do {                                                    \
         wait(4);                                            \
         cpu->F = 0;                                         \
-        SET_FLAG(CFLG, cpu->A & 1)                          \
+        SET_FLAG(CFLG, cpu->A & 1);                         \
         cpu->A = (word)(cpu->A >> 1) | (word)(cpu->A << 7); \
     } while(0)
 

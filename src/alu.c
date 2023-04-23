@@ -154,7 +154,7 @@ int ALU8(struct CPU *cpu, void *RAM, word opcode) {
         return -1;
     }
 
-    DBG_PRINT("op1 = %x, op2 = %x, res = %x\n", op1, op2, res);
+    DBG_PRINT("op1 = 0x%x, op2 = 0x%x, res = 0x%x\n", op1, op2, res);
     SET_Z_FLG(res);
 
     return 0;
@@ -196,7 +196,7 @@ int INCDEC8(struct CPU *cpu, void *RAM, word opcode) {
         SET_FLAG(HFLG, ((op1 & 0xF) < (op2 & 0xF)));
     }
 
-    DBG_PRINT("op1 = %x, op2 = %x, res = %x\n", op1, op2, res);
+    DBG_PRINT("op1 = 0x%x, op2 = 0x%x, res = 0x%x\n", op1, op2, res);
     SET_Z_FLG(res);
 
     return 0;
