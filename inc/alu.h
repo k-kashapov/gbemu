@@ -12,7 +12,7 @@
             cpu->F &= (word)~(1 << FLG);    \
     } while(0)
 
-#define CCF() wait(4); SET_FLAG(NFLG, 0); SET_FLAG(HFLG, 0); SET_FLAG(CFLG, !(cpu->F & CFLG));
+#define CCF() wait(4); SET_FLAG(NFLG, 0); SET_FLAG(HFLG, 0); SET_FLAG(CFLG, !(cpu->F & (1 << CFLG)));
 #define SCF() wait(4); SET_FLAG(NFLG, 0); SET_FLAG(HFLG, 0); SET_FLAG(CFLG, 1);
 #define CPL() wait(4); SET_FLAG(NFLG, 1); SET_FLAG(HFLG, 1); cpu->A = ~cpu->A;
 

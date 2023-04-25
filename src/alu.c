@@ -20,17 +20,17 @@
 #define ADDr(from)      ADD(cpu->A, *from);
 #define ADDHL()         ADD(cpu->A, HL8);
 #define ADDi()          ADD(cpu->A, IMM8);
-#define ADCr(from)      ADD(cpu->A, *from + !!(cpu->F & CFLG));
-#define ADCHL()         ADD(cpu->A, HL8 + !!(cpu->F & CFLG));
-#define ADCi()          ADD(cpu->A, IMM8 + !!(cpu->F & CFLG));
+#define ADCr(from)      ADD(cpu->A, *from + !!(cpu->F & (1 << CFLG)));
+#define ADCHL()         ADD(cpu->A, HL8   + !!(cpu->F & (1 << CFLG)));
+#define ADCi()          ADD(cpu->A, IMM8  + !!(cpu->F & (1 << CFLG)));
 
 #define SUB(from, what) wait(4); SET_FLAG(NFLG, 1); op1 = from; op2 = (word)(what); res = ((dword)(from) - op2); from = (word)res;
 #define SUBr(what)      SUB(cpu->A, *what);
 #define SUBHL()         SUB(cpu->A, HL8);
 #define SUBi()          SUB(cpu->A, IMM8);
-#define SBCr(from)      SUB(cpu->A, *from + !!(cpu->F & CFLG));
-#define SBCHL()         SUB(cpu->A, HL8 + !!(cpu->F & CFLG));
-#define SBCi()          SUB(cpu->A, IMM8 + !!(cpu->F & CFLG));
+#define SBCr(from)      SUB(cpu->A, *from + !!(cpu->F & (1 << CFLG)));
+#define SBCHL()         SUB(cpu->A, HL8   + !!(cpu->F & (1 << CFLG)));
+#define SBCi()          SUB(cpu->A, IMM8  + !!(cpu->F & (1 << CFLG)));
 
 #define CP(what)        wait(4); SET_FLAG(NFLG, 1); op1 = cpu->A; op2 = (word)(what); res = ((dword)cpu->A - op2);
 #define CPr(what)       CP(*what);
