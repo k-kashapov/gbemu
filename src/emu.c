@@ -119,7 +119,7 @@ int initEmu(struct Emu *tgt) {
     }
 
     RAM_ptr = tgt->RAM;
-#endif
+#endif // DBG
 
     return OK;
 }
@@ -157,17 +157,22 @@ int getFile(struct Emu *emu, const char name[static 1]) {
         fprintf(stderr, "ERROR: N logo invalid!");
         return UNSUPPORTED;
     }
-#endif
+#endif // CHECK_HEADER
 
     return OK;
 }
 
 int runEmu(struct Emu *emu) {
+
 #ifndef CHECK_HEADER
     emu->cpu.PC  = 0x0;
 #else
     emu->cpu.PC  = 0x100;
 #endif // CHECK_HEADER
+
+#ifdef OP_COUNT
+    static uint8_t opcodes[0x100] = {0};
+#endif // OP_COUNT
 
     emu->cpu.SP  = 0xFFFE;
     emu->cpu.IME = 1;
@@ -176,7 +181,7 @@ int runEmu(struct Emu *emu) {
 
 #ifdef SINGLE_STEP
     DBG_PRINT("Press ENTER to single step\n");
-#endif
+#endif // SINGLE_STEP
 
     while (!res) {
 
@@ -203,11 +208,27 @@ int runEmu(struct Emu *emu) {
         }
 #endif // PROXYIO
 
+#ifdef OP_COUNT
+        opcodes[emu->RAM[emu->cpu.PC]] += 1;
+#endif // OP_COUNT
+
         res = execOp(&emu->cpu, emu->RAM);
         // TODO: implement HALT and STOP
     }
 
     DBG_PRINT("Quitting...\n");
+
+#ifdef OP_COUNT
+    fprintf(stderr, "Opcodes called:\n");
+    for (unsigned y = 0; y < 0x10; y++) {
+        for (unsigned x = 0; x < 0x10; x++) {
+            if (opcodes[x + y * 0x10]) {
+                fprintf(stderr, "$%02x: %d, ", x + y * 0x10, opcodes[x + y * 0x10]);
+            }
+        }
+        fprintf(stderr, "\n");
+    }
+#endif // OP_COUNT
 
     return OK;
 }

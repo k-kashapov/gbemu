@@ -12,6 +12,9 @@ S = 0
 # Proxy Serial port I/O writes for console output
 PROXYIO = 0
 
+# Count how many times each opcode has been used
+OP_COUNT = 0
+
 CFLAGS = -I inc -DCPU_FREQ=4194304 -DTIME_SCALE=$(TOKI_WO_TOMORE)
 
 ifeq ($(S), 1)
@@ -26,6 +29,10 @@ endif
 
 ifeq ($(PROXYIO), 1)
 	CFLAGS += -DPROXYIO
+endif
+
+ifeq ($(OP_COUNT), 1)
+	CFLAGS += -DOP_COUNT
 endif
 
 include txx.mk
