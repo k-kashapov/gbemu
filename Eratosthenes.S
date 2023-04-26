@@ -5,6 +5,8 @@ SECTION "Text", ROM0
 HEX: 
     db "0123456789ABCDEF_+()"
 
+LEN equ $A0
+
 ; <---------< Clean Up >---------->
 ; Fill memory range with zeroes
 ; Expects:
@@ -177,8 +179,8 @@ FillDiv:
     ADD HL, DE
 
     LD A, L
-    CP $30
-    JR NZ, .FillLoop
+    CP LEN
+    JR C, .FillLoop
 
     POP DE
     POP BC
@@ -265,8 +267,8 @@ Start:
     CALL PrintBC
     CALL FillDiv
     LD A, L
-    CP $30
-    JR NZ, .PrimeLoop
+    CP LEN - 1
+    JR C, .PrimeLoop
 
 ; DEBUG LOOP
 ;    XOR A

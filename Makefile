@@ -18,7 +18,7 @@ OP_COUNT = 0
 CFLAGS = -I inc -DCPU_FREQ=4194304 -DTIME_SCALE=$(TOKI_WO_TOMORE)
 
 ifeq ($(S), 1)
-	CFLAGS += -s -Os
+	CFLAGS += -s -O2
 else
 	CFLAGS += -g -O0 -DDBG
 endif

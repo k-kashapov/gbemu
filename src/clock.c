@@ -6,5 +6,5 @@
 
 void wait(uint32_t cycles) {
     struct timespec req = {.tv_sec = 0, .tv_nsec = cycles * CYCLE_TIME_NANO};
-    nanosleep(&req, NULL);
+    // nanosleep(&req, NULL);
 }
